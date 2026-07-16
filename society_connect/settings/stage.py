@@ -2,9 +2,7 @@ import os
 
 # Override base settings for staging
 DEBUG = False
-ALLOWED_HOSTS = os.environ.get(
-    "ALLOWED_HOSTS", "stage.example.com"
-).split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "stage.example.com").split(",")
 
 DATABASES = {
     "default": {

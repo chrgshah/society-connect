@@ -1,4 +1,3 @@
-import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -8,7 +7,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config("SECRET_KEY", default="django-insecure-dev-key")
 DEBUG = config("DEBUG", default=False, cast=bool)
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=lambda v: [s.strip() for s in v.split(",") if s.strip()])
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default="localhost,127.0.0.1",
+    cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
+)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -68,7 +71,9 @@ REST_FRAMEWORK = {
 }
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -84,7 +89,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 FRONTEND_ORIGINS = config(
     "FRONTEND_ORIGINS",
     default="http://localhost:5173,http://127.0.0.1:5173,http://192.168.1.10:5173",
-    cast=lambda value: [origin.strip() for origin in value.split(",") if origin.strip()],
+    cast=lambda value: [
+        origin.strip() for origin in value.split(",") if origin.strip()
+    ],
 )
 CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
 CORS_ALLOW_CREDENTIALS = True

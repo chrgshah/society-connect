@@ -1,4 +1,3 @@
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
 
@@ -16,5 +15,8 @@ def exception_handler(exc, context):
         data = response.data
         if isinstance(data, dict):
             message = data.get("detail") or "Request failed."
-            return Response({"success": False, "message": message, "errors": data}, status=response.status_code)
+            return Response(
+                {"success": False, "message": message, "errors": data},
+                status=response.status_code,
+            )
     return response

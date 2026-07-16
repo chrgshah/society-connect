@@ -1,0 +1,16 @@
+[
+  {
+    "model": "services.user",
+    "pk": 1,
+    "fields": {
+      "password": "6f2cb9dd8f4b65e24e1c3f3fa5bc57982349237f11abceacd45bbcb74d621c25",
+      "uuid": "74aee5ef-f2f6-4a49-8908-bb0b2522fc24",
+      "created_at": "2026-07-16T00:00:00Z",
+      "updated_at": "2026-07-16T00:00:00Z",
+      "deleted_at": null,
+      "email": "admin@example.com",
+      "username": "admin",
+      "is_active": true
+    }
+  }
+]

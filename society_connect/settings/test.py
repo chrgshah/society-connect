@@ -1,6 +1,8 @@
 from .base import *  # noqa: F403, F401
 
 DEBUG = False
+CSRF_COOKIE_SECURE = False
+JWT_COOKIE_SECURE = False
 
 DATABASES = {
     "default": {
@@ -8,7 +10,3 @@ DATABASES = {
         "NAME": ":memory:",
     }
 }
-
-PASSWORD_HASHERS = [
-    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
-]

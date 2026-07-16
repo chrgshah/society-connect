@@ -1,7 +1,6 @@
-from .author import Author
-from .base import BaseModel
-from .book import Book
-from .category import Category
-from .lending import Lending
-from .member import Member
-from .user import User
+from .base import BaseModel as BaseModel
+from .book import Book as Book
+from .category import Category as Category
+from .lending import Lending as Lending
+from .member import Member as Member
+from .user import User as User

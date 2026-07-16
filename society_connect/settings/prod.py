@@ -2,14 +2,10 @@ import os
 
 # Override base settings for production
 DEBUG = False
-ALLOWED_HOSTS = os.environ.get(
-    "ALLOWED_HOSTS", "localhost"
-).split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost").split(",")
 
 if not os.environ.get("POSTGRES_PASSWORD"):
-    raise ValueError(
-        "POSTGRES_PASSWORD environment variable is required in production"
-    )
+    raise ValueError("POSTGRES_PASSWORD environment variable is required in production")
 
 DATABASES = {
     "default": {

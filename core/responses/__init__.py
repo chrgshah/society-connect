@@ -1,1 +1,1 @@
-from .mixins import ResponseMixin
+from .mixins import ResponseMixin as ResponseMixin

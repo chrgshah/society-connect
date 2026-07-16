@@ -1,0 +1,62 @@
+[
+  {
+    "model": "services.category",
+    "pk": 1,
+    "fields": {
+      "uuid": "6d46b83e-a773-4c9f-9f09-72695d41f3a1",
+      "created_at": "2026-07-16T00:00:00Z",
+      "updated_at": "2026-07-16T00:00:00Z",
+      "deleted_at": null,
+      "name": "Fiction",
+      "description": "Novels, short stories, and other fictional works."
+    }
+  },
+  {
+    "model": "services.category",
+    "pk": 2,
+    "fields": {
+      "uuid": "58e23bd6-3d2b-470f-95ea-cdb770390b1a",
+      "created_at": "2026-07-16T00:00:00Z",
+      "updated_at": "2026-07-16T00:00:00Z",
+      "deleted_at": null,
+      "name": "Science",
+      "description": "Scientific research, discoveries, and educational material."
+    }
+  },
+  {
+    "model": "services.category",
+    "pk": 3,
+    "fields": {
+      "uuid": "3a11ecea-15d3-4b15-a763-4a30e454f04b",
+      "created_at": "2026-07-16T00:00:00Z",
+      "updated_at": "2026-07-16T00:00:00Z",
+      "deleted_at": null,
+      "name": "History",
+      "description": "Historical events, people, cultures, and civilizations."
+    }
+  },
+  {
+    "model": "services.category",
+    "pk": 4,
+    "fields": {
+      "uuid": "a5c92072-6556-40ef-823f-cf8d76804145",
+      "created_at": "2026-07-16T00:00:00Z",
+      "updated_at": "2026-07-16T00:00:00Z",
+      "deleted_at": null,
+      "name": "Mystery",
+      "description": "Mystery, crime, detective, and suspense books."
+    }
+  },
+  {
+    "model": "services.category",
+    "pk": 5,
+    "fields": {
+      "uuid": "e0af1faf-2f80-4460-99f9-3e0e2c20450f",
+      "created_at": "2026-07-16T00:00:00Z",
+      "updated_at": "2026-07-16T00:00:00Z",
+      "deleted_at": null,
+      "name": "Biography",
+      "description": "Biographies, autobiographies, and memoirs."
+    }
+  }
+]

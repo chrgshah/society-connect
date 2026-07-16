@@ -1,0 +1,75 @@
+from rest_framework import serializers
+
+from services.models.book import Book
+from services.models.category import Category
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ["uuid", "name", "description", "created_at"]
+        read_only_fields = ["uuid", "created_at"]
+
+
+class BookSerializer(serializers.ModelSerializer):
+    category_uuid = serializers.UUIDField(write_only=True, required=False)
+    category = CategorySerializer(read_only=True)
+
+    class Meta:
+        model = Book
+        fields = [
+            "uuid",
+            "isbn",
+            "title",
+            "author",
+            "category",
+            "category_uuid",
+            "publisher",
+            "published_year",
+            "description",
+            "total_copies",
+            "available_copies",
+            "shelf_location",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["uuid", "category", "created_at", "updated_at"]
+
+    def validate(self, attrs):
+        category_uuid = attrs.get("category_uuid")
+        if self.instance is None and not category_uuid:
+            raise serializers.ValidationError(
+                {"category_uuid": "Category is required."}
+            )
+        if (
+            category_uuid
+            and not Category.objects.filter(
+                uuid=category_uuid, deleted_at__isnull=True
+            ).exists()
+        ):
+            raise serializers.ValidationError({"category_uuid": "Category not found."})
+
+        available_copies = attrs.get(
+            "available_copies", getattr(self.instance, "available_copies", None)
+        )
+        total_copies = attrs.get(
+            "total_copies", getattr(self.instance, "total_copies", None)
+        )
+        if (
+            available_copies is not None
+            and total_copies is not None
+            and available_copies > total_copies
+        ):
+            raise serializers.ValidationError(
+                {"available_copies": "Available copies cannot exceed total copies."}
+            )
+        if total_copies is not None and total_copies <= 0:
+            raise serializers.ValidationError(
+                {"total_copies": "Total copies must be greater than zero."}
+            )
+        if available_copies is not None and available_copies < 0:
+            raise serializers.ValidationError(
+                {"available_copies": "Available copies cannot be negative."}
+            )
+        return attrs

@@ -7,7 +7,11 @@ from rest_framework.views import APIView
 from core.authentication.jwt_service import invalidate_session
 from core.responses.mixins import ResponseMixin
 from services.factories.authentication import AuthenticationFactory
-from services.serializers.authentication import LoginSerializer, LogoutSerializer, RefreshSerializer
+from services.serializers.authentication import (
+    LoginSerializer,
+    LogoutSerializer,
+    RefreshSerializer,
+)
 
 
 def set_auth_cookies(response, tokens):
@@ -50,7 +54,9 @@ class AuthLoginController(ResponseMixin, APIView):
         serializer.is_valid(raise_exception=True)
         tokens = AuthenticationFactory.login_user(serializer.validated_data["user"])
         get_token(request)
-        response = self.success_response(message="Logged in successfully.", status_code=status.HTTP_200_OK)
+        response = self.success_response(
+            message="Logged in successfully.", status_code=status.HTTP_200_OK
+        )
         return set_auth_cookies(response, tokens)
 
 
@@ -61,11 +67,18 @@ class AuthRefreshController(ResponseMixin, APIView):
     def post(self, request):
         serializer = RefreshSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        refresh_token = serializer.validated_data.get("refresh") or request.COOKIES.get(settings.JWT_REFRESH_COOKIE_NAME)
+        refresh_token = serializer.validated_data.get("refresh") or request.COOKIES.get(
+            settings.JWT_REFRESH_COOKIE_NAME
+        )
         if not refresh_token:
-            return self.error_response(message="Refresh cookie was not provided.", status_code=status.HTTP_401_UNAUTHORIZED)
+            return self.error_response(
+                message="Refresh cookie was not provided.",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
         tokens = AuthenticationFactory.refresh_token(refresh_token)
-        response = self.success_response(message="Token refreshed successfully.", status_code=status.HTTP_200_OK)
+        response = self.success_response(
+            message="Token refreshed successfully.", status_code=status.HTTP_200_OK
+        )
         return set_auth_cookies(response, tokens)
 
 
@@ -75,9 +88,19 @@ class AuthLogoutController(ResponseMixin, APIView):
         serializer.is_valid(raise_exception=True)
         if getattr(request, "session_info", None):
             invalidate_session(request.user.id, request.session_info["jti"])
-        response = self.success_response(message="Logged out successfully.", status_code=status.HTTP_200_OK)
-        response.delete_cookie(settings.JWT_ACCESS_COOKIE_NAME, path="/", samesite=settings.JWT_COOKIE_SAMESITE)
-        response.delete_cookie(settings.JWT_REFRESH_COOKIE_NAME, path="/api/v1/auth/", samesite=settings.JWT_COOKIE_SAMESITE)
+        response = self.success_response(
+            message="Logged out successfully.", status_code=status.HTTP_200_OK
+        )
+        response.delete_cookie(
+            settings.JWT_ACCESS_COOKIE_NAME,
+            path="/",
+            samesite=settings.JWT_COOKIE_SAMESITE,
+        )
+        response.delete_cookie(
+            settings.JWT_REFRESH_COOKIE_NAME,
+            path="/api/v1/auth/",
+            samesite=settings.JWT_COOKIE_SAMESITE,
+        )
         return response
 
 

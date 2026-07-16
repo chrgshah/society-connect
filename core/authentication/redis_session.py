@@ -1,6 +1,6 @@
 import json
 import threading
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Optional
 
 import redis
@@ -29,7 +29,11 @@ def create_redis_session(user_id: int, username: str, jti: str, expires_at: date
     client = _get_client()
     if client is not None:
         try:
-            client.setex(f"nls:session:{user_id}:{jti}", int((expires_at - datetime.now(timezone.utc)).total_seconds()), json.dumps(payload))
+            client.setex(
+                f"nls:session:{user_id}:{jti}",
+                int((expires_at - datetime.now(timezone.utc)).total_seconds()),
+                json.dumps(payload),
+            )
             return payload
         except Exception:
             pass
