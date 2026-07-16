@@ -75,26 +75,32 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-AUTH_USER_MODEL = "services.User"
-
-# Django stores passwords with salted PBKDF2-HMAC-SHA256 by default. Keeping the
-# hasher explicit prevents passwords from ever being stored as plain SHA-256.
-PASSWORD_HASHERS = [
-    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
-]
-
-CORS_ALLOW_ALL_ORIGINS = True
+FRONTEND_ORIGINS = config(
+    "FRONTEND_ORIGINS",
+    default="http://localhost:5173,http://127.0.0.1:5173,http://192.168.1.10:5173",
+    cast=lambda value: [origin.strip() for origin in value.split(",") if origin.strip()],
+)
+CORS_ALLOWED_ORIGINS = FRONTEND_ORIGINS
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = FRONTEND_ORIGINS
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SECURE = not DEBUG
 
 JWT_ACCESS_TOKEN_LIFETIME = 60 * 60 * 8
 JWT_REFRESH_TOKEN_LIFETIME = 60 * 60 * 24 * 7
 JWT_ALGORITHM = "HS256"
 JWT_SECRET_KEY = SECRET_KEY
+JWT_ACCESS_COOKIE_NAME = "nls_access"
+JWT_REFRESH_COOKIE_NAME = "nls_refresh"
+JWT_COOKIE_SECURE = not DEBUG
+JWT_COOKIE_SAMESITE = "Lax"
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(seconds=JWT_ACCESS_TOKEN_LIFETIME),
