@@ -2,6 +2,9 @@ __pycache__/
 *.py[cod]
 *.sqlite3
 .env
+society_connect/settings/dev.py
+society_connect/settings/stage.py
+society_connect/settings/prod.py
 .venv/
 venv/
 .pytest_cache/
