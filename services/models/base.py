@@ -1,8 +1,12 @@
+"""Abstract model fields and soft-deletion behavior shared by services."""
+
 from django.db import models
 from django.utils import timezone
 
 
 class BaseModel(models.Model):
+    """Provide UUIDs, timestamps, and soft deletion to domain models."""
+
     id = models.AutoField(primary_key=True)
     uuid = models.UUIDField(unique=True, db_index=True, null=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -10,9 +14,12 @@ class BaseModel(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
+        """Prevent Django from creating a table for this base class."""
+
         abstract = True
 
     def save(self, *args, **kwargs):
+        """Ensure a UUID exists before persisting the model."""
         if not self.uuid:
             import uuid
 
@@ -20,9 +27,11 @@ class BaseModel(models.Model):
         super().save(*args, **kwargs)
 
     def soft_delete(self) -> None:
+        """Timestamp the record as deleted without removing it permanently."""
         self.deleted_at = timezone.now()
         self.save(update_fields=["deleted_at", "updated_at"])
 
     @property
     def is_deleted(self) -> bool:
+        """Return whether the model has been soft-deleted."""
         return self.deleted_at is not None

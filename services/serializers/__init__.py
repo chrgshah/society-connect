@@ -1,3 +1,5 @@
+"""Serialization schemas used by service controllers."""
+
 from .authentication import (
     LoginSerializer as LoginSerializer,
     LogoutSerializer as LogoutSerializer,

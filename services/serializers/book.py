@@ -1,3 +1,5 @@
+"""Serialization and validation for categories and books."""
+
 from rest_framework import serializers
 
 from services.models.book import Book
@@ -5,17 +7,25 @@ from services.models.category import Category
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Serialize category identifiers and descriptive fields."""
+
     class Meta:
+        """Configure category fields exposed by the API."""
+
         model = Category
         fields = ["uuid", "name", "description", "created_at"]
         read_only_fields = ["uuid", "created_at"]
 
 
 class BookSerializer(serializers.ModelSerializer):
+    """Serialize books and validate category and copy constraints."""
+
     category_uuid = serializers.UUIDField(write_only=True, required=False)
     category = CategorySerializer(read_only=True)
 
     class Meta:
+        """Configure book fields and read-only values exposed by the API."""
+
         model = Book
         fields = [
             "uuid",
@@ -37,6 +47,7 @@ class BookSerializer(serializers.ModelSerializer):
         read_only_fields = ["uuid", "category", "created_at", "updated_at"]
 
     def validate(self, attrs):
+        """Validate category existence and consistent copy counts."""
         category_uuid = attrs.get("category_uuid")
         if self.instance is None and not category_uuid:
             raise serializers.ValidationError(

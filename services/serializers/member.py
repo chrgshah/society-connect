@@ -1,3 +1,5 @@
+"""Serialization and validation for society members."""
+
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 
@@ -5,7 +7,11 @@ from services.models.member import Member
 
 
 class MemberSerializer(serializers.ModelSerializer):
+    """Serialize members and enforce unique, normalized identity fields."""
+
     class Meta:
+        """Configure member fields and generated values exposed by the API."""
+
         model = Member
         fields = [
             "uuid",
@@ -23,11 +29,13 @@ class MemberSerializer(serializers.ModelSerializer):
         read_only_fields = ["uuid", "created_at", "updated_at"]
 
     def validate_phone(self, value):
+        """Normalize a phone number by trimming surrounding whitespace."""
         validator = RegexValidator(r"^\+?[0-9\s-]{7,}$")
         validator(value)
         return value
 
     def validate_email(self, value):
+        """Normalize email and reject duplicates outside the current member."""
         if (
             Member.objects.filter(email=value, deleted_at__isnull=True)
             .exclude(pk=self.instance.pk if self.instance else None)
@@ -37,6 +45,7 @@ class MemberSerializer(serializers.ModelSerializer):
         return value
 
     def validate_membership_number(self, value):
+        """Reject duplicate membership numbers outside the current member."""
         if (
             Member.objects.filter(membership_number=value, deleted_at__isnull=True)
             .exclude(pk=self.instance.pk if self.instance else None)

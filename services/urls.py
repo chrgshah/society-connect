@@ -1,3 +1,5 @@
+"""URL routes for health, authentication, catalog, and lending APIs."""
+
 from django.http import HttpResponse
 from django.urls import path
 

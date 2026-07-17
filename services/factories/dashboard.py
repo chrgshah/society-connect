@@ -1,11 +1,16 @@
+"""Aggregate queries used by the management dashboard."""
+
 from services.models.book import Book
 from services.models.lending import Lending
 from services.models.member import Member
 
 
 class DashboardFactory:
+    """Calculate summary metrics across books, members, and lendings."""
+
     @staticmethod
     def get_summary():
+        """Return current catalog, member, availability, and overdue counts."""
         total_books = Book.objects.filter(deleted_at__isnull=True).count()
         total_copies = sum(
             book.total_copies for book in Book.objects.filter(deleted_at__isnull=True)

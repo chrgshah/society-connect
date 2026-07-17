@@ -1,3 +1,5 @@
+"""Public API exceptions and the REST framework exception handler."""
+
 from .exceptions import (
     ApiError as ApiError,
     BookNotAvailableError as BookNotAvailableError,

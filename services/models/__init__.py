@@ -1,3 +1,5 @@
+"""Public model classes for the services application."""
+
 from .base import BaseModel as BaseModel
 from .book import Book as Book
 from .category import Category as Category

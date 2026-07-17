@@ -1,18 +1,25 @@
+"""Authenticate API requests using JWT cookies and server-side sessions."""
+
 from django.conf import settings
 from django.http import JsonResponse
 from django.middleware.csrf import CsrfViewMiddleware
 from rest_framework import status
 
 from services.models.user import User
+from services.shared.logger import logger
 
 from .jwt_service import decode_token, validate_session
 
 
 class JWTSessionMiddleware:
+    """Attach authenticated users to requests and enforce CSRF protection."""
+
     def __init__(self, get_response):
+        """Store the next callable in Django's middleware chain."""
         self.get_response = get_response
 
     def __call__(self, request):
+        """Authenticate a request, validate CSRF when needed, and continue."""
         path = request.path
         if (
             path.startswith("/admin/")
@@ -30,6 +37,12 @@ class JWTSessionMiddleware:
 
         token = request.COOKIES.get(settings.JWT_ACCESS_COOKIE_NAME)
         if not token:
+            logger.warning(
+                "[SOCIETY_CONNECT] event=auth_rejected reason=missing_token "
+                "method=%s path=%s",
+                request.method,
+                path,
+            )
             return JsonResponse(
                 {
                     "success": False,
@@ -41,6 +54,12 @@ class JWTSessionMiddleware:
         try:
             payload = decode_token(token)
         except Exception:
+            logger.exception(
+                "[SOCIETY_CONNECT] event=auth_rejected reason=invalid_token "
+                "method=%s path=%s",
+                request.method,
+                path,
+            )
             return JsonResponse(
                 {"success": False, "message": "Invalid or expired JWT.", "errors": {}},
                 status=status.HTTP_401_UNAUTHORIZED,
@@ -49,6 +68,12 @@ class JWTSessionMiddleware:
         user_id = payload.get("user_id")
         jti = payload.get("jti")
         if user_id is None or jti is None:
+            logger.warning(
+                "[SOCIETY_CONNECT] event=auth_rejected reason=invalid_payload "
+                "method=%s path=%s",
+                request.method,
+                path,
+            )
             return JsonResponse(
                 {"success": False, "message": "Invalid token payload.", "errors": {}},
                 status=status.HTTP_401_UNAUTHORIZED,
@@ -56,6 +81,13 @@ class JWTSessionMiddleware:
 
         session = validate_session(user_id, jti)
         if session is None:
+            logger.warning(
+                "[SOCIETY_CONNECT] event=auth_rejected reason=invalid_session "
+                "user_id=%s method=%s path=%s",
+                user_id,
+                request.method,
+                path,
+            )
             return JsonResponse(
                 {
                     "success": False,
@@ -68,6 +100,13 @@ class JWTSessionMiddleware:
         try:
             user = User.objects.get(id=user_id, is_active=True, deleted_at__isnull=True)
         except User.DoesNotExist:
+            logger.warning(
+                "[SOCIETY_CONNECT] event=auth_rejected reason=user_not_found "
+                "user_id=%s method=%s path=%s",
+                user_id,
+                request.method,
+                path,
+            )
             return JsonResponse(
                 {"success": False, "message": "User not found.", "errors": {}},
                 status=status.HTTP_401_UNAUTHORIZED,
@@ -82,6 +121,13 @@ class JWTSessionMiddleware:
                 request, lambda req: None, (), {}
             )
             if csrf_failure is not None:
+                logger.warning(
+                    "[SOCIETY_CONNECT] event=auth_rejected reason=csrf_failed "
+                    "user_id=%s method=%s path=%s",
+                    user_id,
+                    request.method,
+                    path,
+                )
                 return JsonResponse(
                     {
                         "success": False,

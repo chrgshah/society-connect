@@ -1,9 +1,13 @@
+"""Society member model."""
+
 from django.db import models
 
 from .base import BaseModel
 
 
 class Member(BaseModel):
+    """Represent a registered person eligible to borrow books."""
+
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
@@ -14,8 +18,11 @@ class Member(BaseModel):
     is_active = models.BooleanField(default=True)
 
     class Meta:
+        """Show recently created members first by default."""
+
         ordering = ["-created_at"]
 
     @property
     def full_name(self):
+        """Return the member's first and last names as display text."""
         return f"{self.first_name} {self.last_name}".strip()

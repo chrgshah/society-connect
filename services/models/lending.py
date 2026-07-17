@@ -1,3 +1,5 @@
+"""Book lending history model."""
+
 from django.db import models
 
 from .base import BaseModel
@@ -6,7 +8,11 @@ from .member import Member
 
 
 class Lending(BaseModel):
+    """Track a borrowed book through its return lifecycle."""
+
     class Status(models.TextChoices):
+        """Supported lifecycle states for a lending."""
+
         BORROWED = "BORROWED", "Borrowed"
         RETURNED = "RETURNED", "Returned"
         OVERDUE = "OVERDUE", "Overdue"
@@ -24,4 +30,6 @@ class Lending(BaseModel):
     notes = models.TextField(blank=True)
 
     class Meta:
+        """Show the newest borrowings first by default."""
+
         ordering = ["-borrowed_at"]

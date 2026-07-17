@@ -1,3 +1,5 @@
+"""Settings shared by every Society Connect deployment environment."""
+
 from datetime import timedelta
 from pathlib import Path
 
@@ -6,7 +8,7 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config("SECRET_KEY", default="django-insecure-dev-key")
-DEBUG = config("DEBUG", default=False, cast=bool)
+DEBUG = False
 ALLOWED_HOSTS = config(
     "ALLOWED_HOSTS",
     default="localhost,127.0.0.1",
@@ -68,6 +70,30 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "services.shared.pagination.StandardPagination",
     "PAGE_SIZE": 20,
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "nls": {
+            "format": "{asctime} {levelname} {name} {message}",
+            "style": "{",
+        }
+    },
+    "handlers": {
+        "nls_console": {
+            "class": "logging.StreamHandler",
+            "formatter": "nls",
+        }
+    },
+    "loggers": {
+        "nls": {
+            "handlers": ["nls_console"],
+            "level": "INFO",
+            "propagate": False,
+        }
+    },
 }
 
 AUTH_PASSWORD_VALIDATORS = [

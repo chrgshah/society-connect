@@ -1,3 +1,5 @@
+"""Public factory services that encapsulate domain operations."""
+
 from .authentication import AuthenticationFactory
 from .book import BookFactory
 from .dashboard import DashboardFactory

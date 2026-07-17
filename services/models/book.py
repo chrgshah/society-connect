@@ -1,3 +1,5 @@
+"""Book catalog model."""
+
 from django.db import models
 
 from .base import BaseModel
@@ -5,6 +7,8 @@ from .category import Category
 
 
 class Book(BaseModel):
+    """Represent a catalog title and its copy availability."""
+
     isbn = models.CharField(max_length=30, unique=True)
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=200)
@@ -20,4 +24,6 @@ class Book(BaseModel):
     is_active = models.BooleanField(default=True)
 
     class Meta:
+        """Order catalog results by title by default."""
+
         ordering = ["title"]

@@ -1,11 +1,16 @@
+"""Response-building mixin shared by API controllers."""
+
 from rest_framework import status
 from rest_framework.response import Response
 
 
 class ResponseMixin:
+    """Build success, error, and paginated responses with one schema."""
+
     def success_response(
         self, data=None, message="Success.", status_code=status.HTTP_200_OK
     ):
+        """Return a successful response containing optional serialized data."""
         return Response(
             {
                 "success": True,
@@ -21,6 +26,7 @@ class ResponseMixin:
         errors=None,
         status_code=status.HTTP_400_BAD_REQUEST,
     ):
+        """Return a structured client error response."""
         return Response(
             {"success": False, "message": message, "errors": errors or {}},
             status=status_code,
@@ -35,6 +41,7 @@ class ResponseMixin:
         message="Success.",
         status_code=status.HTTP_200_OK,
     ):
+        """Return results together with calculated pagination metadata."""
         total_pages = (
             max(1, (total_records + page_size - 1) // page_size) if total_records else 1
         )
