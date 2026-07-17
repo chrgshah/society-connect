@@ -13,6 +13,20 @@ exclude: |
   )
 
 repos:
+  - repo: local
+    hooks:
+      - id: backend-test-coverage
+        name: backend tests with 90% coverage
+        entry: >-
+          python3 -m pytest
+          --cov=core
+          --cov=services
+          --cov-report=term-missing
+          --cov-fail-under=85
+        language: system
+        pass_filenames: false
+        always_run: true
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.21
     hooks:
@@ -24,7 +38,14 @@ repos:
     hooks:
       - id: bandit
         name: bandit security scan
-        exclude: ^tests/
+        args:
+          - --recursive
+          - .
+          - --exclude
+          - ./frontend,./services/migrations,./.venv,./venv
+          - --skip
+          - B101
+        pass_filenames: false
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0

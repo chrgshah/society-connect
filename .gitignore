@@ -8,6 +8,8 @@ society_connect/settings/prod.py
 .venv/
 venv/
 .pytest_cache/
+.coverage
+.coverage.*
 .ruff_cache/
 htmlcov/
 node_modules/

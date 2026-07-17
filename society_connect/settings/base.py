@@ -63,6 +63,7 @@ WSGI_APPLICATION = "society_connect.wsgi.application"
 ASGI_APPLICATION = "society_connect.asgi.application"
 
 REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "core.exceptions.handlers.exception_handler",
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
     ],
