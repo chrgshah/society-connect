@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createBook, getBook, getCategories, updateBook } from '../api/bookApi';
 import { PageHeader } from '../components/PageHeader';
+import { useToast } from '../components/ToastProvider';
 import { getErrorMessage } from '../utils/errors';
 import type { Category } from '../types/book';
 
@@ -23,6 +24,7 @@ interface BookFormValues {
 export const BookFormPage = () => {
   const [form] = Form.useForm<BookFormValues>();
   const navigate = useNavigate();
+  const toast = useToast();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -69,12 +71,16 @@ export const BookFormPage = () => {
       };
       if (id && id !== 'new') {
         await updateBook(id, payload);
+        toast.success('The book details were updated.', 'Book updated');
       } else {
         await createBook(payload);
+        toast.success('The new book was added to the library.', 'Book added');
       }
       navigate('/books');
     } catch (err) {
-      setError(getErrorMessage(err));
+      const message = getErrorMessage(err);
+      setError(message);
+      toast.error(message, id && id !== 'new' ? 'Book update failed' : 'Book creation failed');
     } finally {
       setLoading(false);
     }

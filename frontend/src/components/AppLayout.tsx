@@ -3,6 +3,7 @@ import { Avatar, Dropdown, Layout, Menu, Space, Typography } from 'antd';
 import { BookOutlined, ClockCircleOutlined, DashboardOutlined, LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, SwapOutlined, TeamOutlined } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { useToast } from './ToastProvider';
 
 const { Header, Sider, Content } = Layout;
 
@@ -11,6 +12,7 @@ export const AppLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const toast = useToast();
 
   const items = useMemo(
     () => [
@@ -26,6 +28,7 @@ export const AppLayout = () => {
 
   const onLogout = async () => {
     await logout();
+    toast.success('You have been signed out.', 'Logged out');
     navigate('/login');
   };
 

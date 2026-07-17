@@ -1,22 +1,37 @@
-import { Card, Descriptions } from 'antd';
+import { Alert, Card, Descriptions } from 'antd';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getBook } from '../api/bookApi';
 import { PageHeader } from '../components/PageHeader';
+import { getErrorMessage } from '../utils/errors';
 import type { Book } from '../types/book';
 
 export const BookDetailPage = () => {
   const { id } = useParams();
   const [book, setBook] = useState<Book | null>(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const load = async () => {
       if (!id) return;
-      const response = await getBook(id);
-      setBook(response.data.data);
+      try {
+        const response = await getBook(id);
+        setBook(response.data.data);
+      } catch (loadError) {
+        setError(getErrorMessage(loadError));
+      }
     };
     void load();
   }, [id]);
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader title="Book Details" description="View the book details" />
+        <Alert type="error" message={error} showIcon />
+      </div>
+    );
+  }
 
   if (!book) return null;
 

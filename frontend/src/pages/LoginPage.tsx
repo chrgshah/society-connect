@@ -2,6 +2,7 @@ import { Alert, Button, Card, Form, Input, Typography } from 'antd';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { useToast } from '../components/ToastProvider';
 import { getErrorMessage } from '../utils/errors';
 
 export const LoginPage = () => {
@@ -9,15 +10,19 @@ export const LoginPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
+  const toast = useToast();
 
   const onFinish = async (values: { username: string; password: string }) => {
     setLoading(true);
     setError('');
     try {
       await login(values.username, values.password);
+      toast.success('You are now signed in.', 'Access authorized');
       navigate('/');
     } catch (err) {
-      setError(getErrorMessage(err));
+      const message = getErrorMessage(err);
+      setError(message);
+      toast.error(message, 'Access denied');
     } finally {
       setLoading(false);
     }

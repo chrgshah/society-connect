@@ -1,23 +1,31 @@
-import { Button, Input, Select, Space, Table, Tag } from 'antd';
+import { Alert, Button, Input, Select, Space, Table, Tag } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { deactivateMember, getMembers } from '../api/memberApi';
 import { PageHeader } from '../components/PageHeader';
 import { confirmAction } from '../components/ConfirmAction';
+import { useToast } from '../components/ToastProvider';
 import { formatDate } from '../utils/dates';
+import { getErrorMessage } from '../utils/errors';
 import type { Member } from '../types/member';
 
 export const MemberListPage = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [error, setError] = useState('');
 
   const loadMembers = async () => {
     setLoading(true);
+    setError('');
     try {
       const response = await getMembers({ search, page: 1, page_size: 20 });
       setMembers(response.data.data.results);
+    } catch (loadError) {
+      setMembers([]);
+      setError(getErrorMessage(loadError));
     } finally {
       setLoading(false);
     }
@@ -28,14 +36,20 @@ export const MemberListPage = () => {
   const remove = (member: Member) => {
     const name = `${member.first_name} ${member.last_name}`.trim();
     confirmAction('Deactivate member', `Deactivate ${name}?`, async () => {
-      await deactivateMember(member.uuid);
-      void loadMembers();
+      try {
+        await deactivateMember(member.uuid);
+        toast.success(`${name} was deactivated.`, 'Member deactivated');
+        await loadMembers();
+      } catch (error) {
+        toast.error(getErrorMessage(error), 'Member deactivation failed');
+      }
     });
   };
 
   return (
     <div>
       <PageHeader title="Members" description="Manage library members" extra={<Button type="primary" onClick={() => navigate('/members/new')}>Add Member</Button>} />
+      {error ? <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} /> : null}
       <Space style={{ marginBottom: 16 }}>
         <Input.Search value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search members" />
       </Space>

@@ -2,6 +2,7 @@
 
 import pytest
 
+from core.authentication import redis_session
 from services.shared.password import hash_string
 
 
@@ -106,3 +107,27 @@ def test_refresh_rejects_invalid_token_and_clears_cookies(api_client):
     assert response.json()["message"] == "Refresh token is invalid or expired."
     assert response.cookies["nls_access"]["max-age"] == 0
     assert response.cookies["nls_refresh"]["max-age"] == 0
+
+
+@pytest.mark.django_db
+def test_flushed_sessions_force_logout_and_cannot_refresh(api_client, staff_user):
+    """Verify clearing Redis invalidates both cookies and blocks reauthentication."""
+    login = api_client.post(
+        "/api/v1/auth/login/",
+        {"username": "admin", "password": "Admin@12345"},
+        format="json",
+    )
+    assert login.status_code == 200
+    stale_refresh_token = api_client.cookies["nls_refresh"].value
+    redis_session._MEMORY_STORE.clear()
+
+    profile = api_client.get("/api/v1/auth/me/")
+
+    assert profile.status_code == 401
+    assert profile.json()["message"] == "Redis session missing or invalid."
+    assert profile.cookies["nls_access"]["max-age"] == 0
+    assert profile.cookies["nls_refresh"]["max-age"] == 0
+    api_client.cookies["nls_refresh"] = stale_refresh_token
+    refresh = api_client.post("/api/v1/auth/refresh/", {}, format="json")
+    assert refresh.status_code == 401
+    assert refresh.json()["message"] == "Refresh token is invalid or expired."

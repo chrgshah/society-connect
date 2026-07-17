@@ -13,14 +13,19 @@ from .redis_session import create_redis_session, delete_redis_session, get_redis
 
 
 def create_tokens(user):
-    """Create a token pair and persist the corresponding access session."""
+    """Create a token pair and persist both server-side sessions."""
     access_token = AccessToken.for_user(user)
     refresh_token = RefreshToken.for_user(user)
-    expires_at = datetime.now(timezone.utc) + timedelta(
+    access_expires_at = datetime.now(timezone.utc) + timedelta(
         seconds=settings.JWT_ACCESS_TOKEN_LIFETIME
     )
-    jti = access_token["jti"]
-    create_redis_session(user.id, user.username, jti, expires_at)
+    refresh_expires_at = datetime.now(timezone.utc) + timedelta(
+        seconds=settings.JWT_REFRESH_TOKEN_LIFETIME
+    )
+    create_redis_session(user.id, user.username, access_token["jti"], access_expires_at)
+    create_redis_session(
+        user.id, user.username, refresh_token["jti"], refresh_expires_at
+    )
     logger.info("[SOCIETY_CONNECT] event=auth_tokens_created user_id=%s", user.id)
     return {"access": str(access_token), "refresh": str(refresh_token)}
 
@@ -59,16 +64,19 @@ def validate_session(user_id: int, jti: str):
 
 
 def refresh_tokens(refresh_token: str):
-    """Validate a refresh token and issue a new pair for its active user."""
+    """Require a live refresh session, rotate it, and issue a new token pair."""
     payload = jwt.decode(
         refresh_token,
         settings.JWT_SECRET_KEY,
         algorithms=[settings.JWT_ALGORITHM],
         options={"verify_exp": True},
     )
-    user = User.objects.get(
-        id=payload["user_id"], is_active=True, deleted_at__isnull=True
-    )
+    user_id = payload["user_id"]
+    refresh_jti = payload["jti"]
+    if validate_session(user_id, refresh_jti) is None:
+        raise jwt.InvalidTokenError("Refresh session missing or invalid.")
+    user = User.objects.get(id=user_id, is_active=True, deleted_at__isnull=True)
+    delete_redis_session(user_id, refresh_jti)
     return create_tokens(user)
 
 

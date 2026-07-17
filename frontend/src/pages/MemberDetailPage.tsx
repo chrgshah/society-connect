@@ -1,9 +1,10 @@
-import { Card, Descriptions, Table } from 'antd';
+import { Alert, Card, Descriptions, Table } from 'antd';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getMember } from '../api/memberApi';
 import { getMemberBorrowedBooks } from '../api/lendingApi';
 import { PageHeader } from '../components/PageHeader';
+import { getErrorMessage } from '../utils/errors';
 import type { Member } from '../types/member';
 import type { Lending } from '../types/lending';
 
@@ -11,16 +12,30 @@ export const MemberDetailPage = () => {
   const { id } = useParams();
   const [member, setMember] = useState<Member | null>(null);
   const [borrowed, setBorrowed] = useState<Lending[]>([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const load = async () => {
       if (!id) return;
-      const [memberResponse, borrowedResponse] = await Promise.all([getMember(id), getMemberBorrowedBooks(id)]);
-      setMember(memberResponse.data.data);
-      setBorrowed(borrowedResponse.data.data);
+      try {
+        const [memberResponse, borrowedResponse] = await Promise.all([getMember(id), getMemberBorrowedBooks(id)]);
+        setMember(memberResponse.data.data);
+        setBorrowed(borrowedResponse.data.data);
+      } catch (loadError) {
+        setError(getErrorMessage(loadError));
+      }
     };
     void load();
   }, [id]);
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader title="Member Details" description="View a member and their active borrowings" />
+        <Alert type="error" message={error} showIcon />
+      </div>
+    );
+  }
 
   if (!member) return null;
 

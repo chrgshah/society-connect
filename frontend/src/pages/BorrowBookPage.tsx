@@ -5,6 +5,7 @@ import { borrowBook } from '../api/lendingApi';
 import { getMembers } from '../api/memberApi';
 import { getBooks } from '../api/bookApi';
 import { PageHeader } from '../components/PageHeader';
+import { useToast } from '../components/ToastProvider';
 import { getErrorMessage } from '../utils/errors';
 import type { Member } from '../types/member';
 import type { Book } from '../types/book';
@@ -18,6 +19,7 @@ interface BorrowBookFormValues {
 
 export const BorrowBookPage = () => {
   const [form] = Form.useForm<BorrowBookFormValues>();
+  const toast = useToast();
   const [members, setMembers] = useState<Member[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
   const [memberSearch, setMemberSearch] = useState('');
@@ -28,8 +30,13 @@ export const BorrowBookPage = () => {
 
   useEffect(() => {
     const loadBooks = async () => {
-      const booksResponse = await getBooks({ is_available: true, page: 1, page_size: 50 });
-      setBooks(booksResponse.data.data.results);
+      try {
+        const booksResponse = await getBooks({ is_available: true, page: 1, page_size: 50 });
+        setBooks(booksResponse.data.data.results);
+      } catch (loadError) {
+        setBooks([]);
+        setError(getErrorMessage(loadError));
+      }
     };
     void loadBooks();
   }, []);
@@ -85,9 +92,12 @@ export const BorrowBookPage = () => {
         notes: values.notes?.trim() || '',
       });
       setMessage('Book borrowed successfully.');
+      toast.success('The borrowing record was created.', 'Book borrowed');
       form.resetFields();
     } catch (err) {
-      setError(getErrorMessage(err));
+      const message = getErrorMessage(err);
+      setError(message);
+      toast.error(message, 'Borrowing failed');
     } finally {
       setLoading(false);
     }

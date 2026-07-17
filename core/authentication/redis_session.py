@@ -2,7 +2,7 @@
 
 import json
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import redis
@@ -26,13 +26,18 @@ def _get_client():
 
 
 def create_redis_session(user_id: int, username: str, jti: str, expires_at: datetime):
-    """Persist a session in Redis or the process-local fallback store."""
+    """Persist a session for no longer than the configured Redis TTL."""
+    now = datetime.now(timezone.utc)
+    session_expires_at = min(
+        expires_at,
+        now + timedelta(seconds=settings.REDIS_SESSION_TTL_SECONDS),
+    )
     payload = {
         "user_id": user_id,
         "username": username,
         "jti": jti,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "expires_at": expires_at.isoformat(),
+        "created_at": now.isoformat(),
+        "expires_at": session_expires_at.isoformat(),
         "is_active": True,
     }
     client = _get_client()
@@ -40,7 +45,7 @@ def create_redis_session(user_id: int, username: str, jti: str, expires_at: date
         try:
             client.setex(
                 f"nls:session:{user_id}:{jti}",
-                int((expires_at - datetime.now(timezone.utc)).total_seconds()),
+                max(1, int((session_expires_at - now).total_seconds())),
                 json.dumps(payload),
             )
             return payload

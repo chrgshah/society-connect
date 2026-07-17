@@ -42,6 +42,7 @@ services:
       CSRF_COOKIE_SECURE: "false"
       JWT_COOKIE_SECURE: "false"
       REDIS_URL: redis://redis:6379/0
+      REDIS_SESSION_TTL_SECONDS: "21600"
       POSTGRES_DB: library_db
       POSTGRES_USER: library_user
       POSTGRES_PASSWORD: library_pass

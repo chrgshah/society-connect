@@ -7,7 +7,8 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
-from core.authentication.jwt_service import invalidate_session
+from core.authentication.cookies import clear_auth_cookies, set_auth_cookies
+from core.authentication.jwt_service import decode_token, invalidate_session
 from core.responses.mixins import ResponseMixin
 from services.factories.authentication import AuthenticationFactory
 from services.models.user import User
@@ -17,44 +18,6 @@ from services.serializers.authentication import (
     RefreshSerializer,
 )
 from services.shared.logger import logger
-
-
-def set_auth_cookies(response, tokens):
-    """Attach secure access and refresh cookies to an API response."""
-    response.set_cookie(
-        settings.JWT_ACCESS_COOKIE_NAME,
-        tokens["access"],
-        max_age=settings.JWT_ACCESS_TOKEN_LIFETIME,
-        httponly=True,
-        secure=settings.JWT_COOKIE_SECURE,
-        samesite=settings.JWT_COOKIE_SAMESITE,
-        path="/",
-    )
-    response.set_cookie(
-        settings.JWT_REFRESH_COOKIE_NAME,
-        tokens["refresh"],
-        max_age=settings.JWT_REFRESH_TOKEN_LIFETIME,
-        httponly=True,
-        secure=settings.JWT_COOKIE_SECURE,
-        samesite=settings.JWT_COOKIE_SAMESITE,
-        path="/api/v1/auth/",
-    )
-    return response
-
-
-def clear_auth_cookies(response):
-    """Remove access and refresh cookies from an API response."""
-    response.delete_cookie(
-        settings.JWT_ACCESS_COOKIE_NAME,
-        path="/",
-        samesite=settings.JWT_COOKIE_SAMESITE,
-    )
-    response.delete_cookie(
-        settings.JWT_REFRESH_COOKIE_NAME,
-        path="/api/v1/auth/",
-        samesite=settings.JWT_COOKIE_SAMESITE,
-    )
-    return response
 
 
 class AuthCsrfController(ResponseMixin, APIView):
@@ -140,6 +103,17 @@ class AuthLogoutController(ResponseMixin, APIView):
         serializer.is_valid(raise_exception=True)
         if getattr(request, "session_info", None):
             invalidate_session(request.user.id, request.session_info["jti"])
+        refresh_token = request.COOKIES.get(settings.JWT_REFRESH_COOKIE_NAME)
+        if refresh_token:
+            try:
+                refresh_payload = decode_token(refresh_token)
+                invalidate_session(request.user.id, refresh_payload["jti"])
+            except (jwt.InvalidTokenError, KeyError):
+                logger.warning(
+                    "[SOCIETY_CONNECT] event=logout_refresh_cleanup_skipped "
+                    "reason=invalid_token user_id=%s",
+                    request.user.id,
+                )
         logger.info(
             "[SOCIETY_CONNECT] event=logout_succeeded user_id=%s", request.user.id
         )

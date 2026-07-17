@@ -8,6 +8,7 @@ from rest_framework import status
 from services.models.user import User
 from services.shared.logger import logger
 
+from .cookies import clear_auth_cookies
 from .jwt_service import decode_token, validate_session
 
 
@@ -88,7 +89,7 @@ class JWTSessionMiddleware:
                 request.method,
                 path,
             )
-            return JsonResponse(
+            response = JsonResponse(
                 {
                     "success": False,
                     "message": "Redis session missing or invalid.",
@@ -96,6 +97,7 @@ class JWTSessionMiddleware:
                 },
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+            return clear_auth_cookies(response)
 
         try:
             user = User.objects.get(id=user_id, is_active=True, deleted_at__isnull=True)

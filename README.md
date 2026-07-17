@@ -222,6 +222,7 @@ Important backend variables are:
 | `POSTGRES_HOST` | PostgreSQL service hostname | `db` |
 | `POSTGRES_PORT` | PostgreSQL port | `5432` |
 | `REDIS_URL` | Authentication session store | `redis://redis:6379/0` |
+| `REDIS_SESSION_TTL_SECONDS` | Maximum lifetime of each authentication session | `21600` (6 hours) |
 
 The Compose credentials are for local use only. Replace the secret key, database
 password, allowed hosts, and origin values before deploying anywhere public. Keep

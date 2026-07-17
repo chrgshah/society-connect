@@ -144,3 +144,6 @@ SIMPLE_JWT = {
 }
 
 REDIS_URL = config("REDIS_URL", default="redis://localhost:6379/0")
+REDIS_SESSION_TTL_SECONDS = config(
+    "REDIS_SESSION_TTL_SECONDS", default=60 * 60 * 6, cast=int
+)

@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { getCurrentUser, initializeCsrf, login as loginApi, logout as logoutApi } from '../api/authApi';
+import { useToast } from '../components/ToastProvider';
 import type { AuthUser } from '../types/auth';
 
 interface AuthContextValue {
@@ -12,11 +13,17 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const toast = useToast();
   const [user, setUser] = useState<AuthUser | null>(null);
+  const authenticatedUserRef = useRef<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleAuthExpired = () => {
+      if (authenticatedUserRef.current) {
+        toast.warning('Your session is no longer valid. Please sign in again.', 'Session expired');
+      }
+      authenticatedUserRef.current = null;
       setUser(null);
       setLoading(false);
     };
@@ -26,8 +33,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         await initializeCsrf();
         const profile = await getCurrentUser();
+        authenticatedUserRef.current = profile;
         setUser(profile);
       } catch {
+        authenticatedUserRef.current = null;
         setUser(null);
       } finally {
         setLoading(false);
@@ -38,11 +47,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       window.removeEventListener('auth:expired', handleAuthExpired);
     };
-  }, []);
+  }, [toast]);
 
   const login = async (username: string, password: string) => {
     await loginApi(username, password);
     const data = await getCurrentUser();
+    authenticatedUserRef.current = data;
     setUser(data);
   };
 
@@ -52,6 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch {
       // ignore
     }
+    authenticatedUserRef.current = null;
     setUser(null);
   };
 

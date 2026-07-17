@@ -49,14 +49,38 @@ def test_validate_session_rejects_missing_expired_and_inactive(monkeypatch):
 def test_decode_and_refresh_token_helpers(monkeypatch):
     """Verify JWT helpers delegate decoded identity to token creation."""
     monkeypatch.setattr(
-        jwt_service.jwt, "decode", lambda *_args, **_kwargs: {"user_id": 7}
+        jwt_service.jwt,
+        "decode",
+        lambda *_args, **_kwargs: {"user_id": 7, "jti": "refresh-jti"},
     )
     user = object()
     monkeypatch.setattr(jwt_service.User.objects, "get", lambda **_kwargs: user)
+    monkeypatch.setattr(
+        jwt_service, "validate_session", lambda *_args: {"active": True}
+    )
+    delete_session = Mock()
+    monkeypatch.setattr(jwt_service, "delete_redis_session", delete_session)
     monkeypatch.setattr(jwt_service, "create_tokens", lambda value: {"user": value})
 
-    assert jwt_service.decode_token("token") == {"user_id": 7}
+    assert jwt_service.decode_token("token") == {
+        "user_id": 7,
+        "jti": "refresh-jti",
+    }
     assert jwt_service.refresh_tokens("refresh") == {"user": user}
+    delete_session.assert_called_once_with(7, "refresh-jti")
+
+
+def test_refresh_rejects_missing_server_session(monkeypatch):
+    """Verify a signed refresh token cannot recreate a flushed session."""
+    monkeypatch.setattr(
+        jwt_service.jwt,
+        "decode",
+        lambda *_args, **_kwargs: {"user_id": 7, "jti": "refresh-jti"},
+    )
+    monkeypatch.setattr(jwt_service, "validate_session", lambda *_args: None)
+
+    with pytest.raises(jwt_service.jwt.InvalidTokenError):
+        jwt_service.refresh_tokens("refresh")
 
 
 def test_redis_client_creation_failure(monkeypatch):
@@ -72,7 +96,7 @@ def test_redis_client_creation_failure(monkeypatch):
 def test_redis_session_success_paths(monkeypatch):
     """Verify Redis-backed session create, read, and delete operations."""
     client = Mock()
-    expires = datetime.now(timezone.utc) + timedelta(hours=1)
+    expires = datetime.now(timezone.utc) + timedelta(days=7)
     monkeypatch.setattr(redis_session, "_get_client", lambda: client)
 
     payload = redis_session.create_redis_session(1, "user", "jti", expires)
@@ -81,6 +105,11 @@ def test_redis_session_success_paths(monkeypatch):
     assert redis_session.get_redis_session(1, "jti") == payload
     redis_session.delete_redis_session(1, "jti")
     client.setex.assert_called_once()
+    redis_ttl = client.setex.call_args.args[1]
+    assert 1 <= redis_ttl <= 60 * 60 * 6
+    stored_expiry = datetime.fromisoformat(payload["expires_at"])
+    created_at = datetime.fromisoformat(payload["created_at"])
+    assert stored_expiry - created_at <= timedelta(hours=6)
     client.delete.assert_called_once()
 
 
@@ -130,6 +159,9 @@ def test_middleware_authentication_rejections(
 
     assert response.status_code == 401
     assert json.loads(response.content)["message"] == message
+    if message == "Redis session missing or invalid.":
+        assert response.cookies["nls_access"]["max-age"] == 0
+        assert response.cookies["nls_refresh"]["max-age"] == 0
 
 
 def test_middleware_rejects_failed_csrf(monkeypatch, staff_user):

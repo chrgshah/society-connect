@@ -1,21 +1,29 @@
-import { Button, Table } from 'antd';
+import { Alert, Button, Table } from 'antd';
 import { useEffect, useState } from 'react';
 import { getLendings, returnBook } from '../api/lendingApi';
 import { PageHeader } from '../components/PageHeader';
 import { StatusTag } from '../components/StatusTag';
 import { confirmAction } from '../components/ConfirmAction';
+import { useToast } from '../components/ToastProvider';
 import { formatDateTime } from '../utils/dates';
+import { getErrorMessage } from '../utils/errors';
 import type { Lending } from '../types/lending';
 
 export const LendingListPage = () => {
+  const toast = useToast();
   const [lendings, setLendings] = useState<Lending[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const load = async () => {
     setLoading(true);
+    setError('');
     try {
       const response = await getLendings({ page: 1, page_size: 20 });
       setLendings(response.data.data.results);
+    } catch (loadError) {
+      setLendings([]);
+      setError(getErrorMessage(loadError));
     } finally {
       setLoading(false);
     }
@@ -25,14 +33,20 @@ export const LendingListPage = () => {
 
   const handleReturn = (record: Lending) => {
     confirmAction('Return book', 'Return this borrowed book?', async () => {
-      await returnBook(record.uuid);
-      void load();
+      try {
+        await returnBook(record.uuid);
+        toast.success('The book was returned successfully.', 'Book returned');
+        await load();
+      } catch (error) {
+        toast.error(getErrorMessage(error), 'Book return failed');
+      }
     });
   };
 
   return (
     <div>
       <PageHeader title="Lending Records" description="Track borrowings and returns" />
+      {error ? <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} /> : null}
       <Table
         loading={loading}
         dataSource={lendings}

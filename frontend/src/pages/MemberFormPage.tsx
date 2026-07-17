@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createMember, getMember, updateMember } from '../api/memberApi';
 import { PageHeader } from '../components/PageHeader';
+import { useToast } from '../components/ToastProvider';
 import { getErrorMessage } from '../utils/errors';
 
 interface MemberFormValues {
@@ -21,6 +22,7 @@ interface MemberFormValues {
 export const MemberFormPage = () => {
   const [form] = Form.useForm<MemberFormValues>();
   const navigate = useNavigate();
+  const toast = useToast();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -28,9 +30,13 @@ export const MemberFormPage = () => {
   useEffect(() => {
     const load = async () => {
       if (!id || id === 'new') return;
-      const response = await getMember(id);
-      const member = response.data.data;
-      form.setFieldsValue({ ...member, membership_date: dayjs(member.membership_date) });
+      try {
+        const response = await getMember(id);
+        const member = response.data.data;
+        form.setFieldsValue({ ...member, membership_date: dayjs(member.membership_date) });
+      } catch (loadError) {
+        setError(getErrorMessage(loadError));
+      }
     };
     void load();
   }, [id, form]);
@@ -51,12 +57,16 @@ export const MemberFormPage = () => {
       };
       if (id && id !== 'new') {
         await updateMember(id, payload);
+        toast.success('The member details were updated.', 'Member updated');
       } else {
         await createMember(payload);
+        toast.success('The new member was added.', 'Member added');
       }
       navigate('/members');
     } catch (err) {
-      setError(getErrorMessage(err));
+      const message = getErrorMessage(err);
+      setError(message);
+      toast.error(message, id && id !== 'new' ? 'Member update failed' : 'Member creation failed');
     } finally {
       setLoading(false);
     }
