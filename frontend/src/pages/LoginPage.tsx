@@ -26,7 +26,7 @@ export const LoginPage = () => {
   return (
     <div style={{ maxWidth: 420, margin: '80px auto' }}>
       <Card>
-        <Typography.Title level={2}>Library Staff Login</Typography.Title>
+        <Typography.Title level={2}>Society Connect Login</Typography.Title>
         {error ? <Alert type="error" message={error} style={{ marginBottom: 16 }} /> : null}
         <Form onFinish={onFinish} layout="vertical" onValuesChange={() => setError('')}>
           <Form.Item label="Username" name="username" rules={[{ required: true, whitespace: true, message: 'Please enter Username' }]}>

@@ -32,7 +32,22 @@ export const AppLayout = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme="light">
-        <div style={{ padding: 16, fontWeight: 700 }}>Neighborhood Library</div>
+        <div
+          title="Society Connect"
+          style={{
+            alignItems: 'center',
+            display: 'flex',
+            fontWeight: 700,
+            height: 64,
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            lineHeight: 1.2,
+            overflow: 'hidden',
+            padding: collapsed ? '0 8px' : '0 16px',
+            whiteSpace: collapsed ? 'nowrap' : 'normal',
+          }}
+        >
+          {collapsed ? 'SC' : 'Society Connect'}
+        </div>
         <Menu selectedKeys={[location.pathname]} mode="inline" items={items} />
       </Sider>
       <Layout>
