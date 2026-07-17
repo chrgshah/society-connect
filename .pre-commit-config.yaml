@@ -22,7 +22,7 @@ repos:
           --cov=core
           --cov=services
           --cov-report=term-missing
-          --cov-fail-under=85
+          --cov-fail-under=90
         language: system
         pass_filenames: false
         always_run: true

@@ -67,6 +67,40 @@ def test_borrow_rejects_unavailable_book(authenticated_client):
 
 
 @pytest.mark.django_db
+def test_borrow_rejects_inactive_book(authenticated_client):
+    """Verify inactive books cannot be borrowed even when copies exist."""
+    member = create_member()
+    book = create_book(is_active=False)
+
+    response = authenticated_client.post(
+        "/api/v1/lending/borrow/",
+        {"member_uuid": str(member.uuid), "book_uuid": str(book.uuid)},
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert response.json()["message"] == "Book is inactive."
+
+
+@pytest.mark.django_db
+def test_past_due_borrow_is_immediately_overdue(authenticated_client):
+    """Verify a lending created past its due time is marked overdue."""
+    member = create_member()
+    book = create_book()
+    response = authenticated_client.post(
+        "/api/v1/lending/borrow/",
+        {
+            "member_uuid": str(member.uuid),
+            "book_uuid": str(book.uuid),
+            "due_at": "2020-01-01T00:00:00Z",
+        },
+        format="json",
+    )
+    assert response.status_code == 201
+    assert response.json()["data"]["status"] == "OVERDUE"
+
+
+@pytest.mark.django_db
 def test_lending_detail_list_and_member_borrowed_books(authenticated_client):
     """Verify a borrowing appears in detail, list, and member-specific APIs."""
     member = create_member()

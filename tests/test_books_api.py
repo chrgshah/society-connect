@@ -103,3 +103,14 @@ def test_create_book_rejects_invalid_copy_counts(authenticated_client):
 
     assert response.status_code == 400
     assert "available_copies" in response.json()["errors"]
+
+
+@pytest.mark.django_db
+def test_put_book_uses_update_behavior(authenticated_client):
+    """Verify PUT delegates to the supported book update behavior."""
+    book = create_book()
+    response = authenticated_client.put(
+        f"/api/v1/books/{book.uuid}/", {"title": "Put title"}, format="json"
+    )
+    assert response.status_code == 200
+    assert response.json()["data"]["title"] == "Put title"

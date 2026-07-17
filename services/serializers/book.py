@@ -79,8 +79,4 @@ class BookSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"total_copies": "Total copies must be greater than zero."}
             )
-        if available_copies is not None and available_copies < 0:
-            raise serializers.ValidationError(
-                {"available_copies": "Available copies cannot be negative."}
-            )
         return attrs
