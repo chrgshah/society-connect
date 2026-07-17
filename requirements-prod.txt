@@ -4,7 +4,9 @@ django-filter==25.1
 djangorestframework==3.16.1
 djangorestframework-simplejwt==5.5.1
 gunicorn==23.0.0
+grpcio==1.76.0
 psycopg[binary]==3.2.13
 PyJWT==2.13.0
+protobuf==6.33.6
 python-decouple==3.8
 redis==7.0.1
