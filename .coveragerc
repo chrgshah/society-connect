@@ -1,0 +1,5 @@
+[run]
+omit =
+    */migrations/*
+    */grpc_api/*_pb2.py
+    */grpc_api/*_pb2_grpc.py

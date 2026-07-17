@@ -191,6 +191,79 @@ society-connect-env\Scripts\Activate.ps1
 
 Keep the backend terminal running.
 
+## Learning gRPC with the login API
+
+The project includes one intentionally small gRPC API so developers can compare
+gRPC with the existing REST login without changing the browser application. Both
+transports reuse `LoginSerializer` for credential validation and
+`AuthenticationFactory` for JWT creation:
+
+```text
+REST client -> POST /api/v1/auth/login/ -> LoginSerializer -> AuthenticationFactory
+gRPC client -> AuthenticationService/Login -> LoginSerializer -> AuthenticationFactory
+```
+
+REST returns JWTs as HTTP-only cookies. gRPC has no browser-cookie convention, so
+the learning API returns the access and refresh tokens as typed protobuf fields.
+Treat those values as secrets and do not paste them into logs or commit them.
+
+### Run it locally without Docker
+
+PostgreSQL and Redis must be available using the values in the existing
+`society_connect/settings/dev.py`. Activate the same environment used for Django,
+install the updated requirements, and apply migrations:
+
+```bash
+source /Users/chiragshah/Projects/environments/society-connect-env/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+```
+
+Start only the gRPC server in one terminal (the REST server does not need to run):
+
+```bash
+python manage.py run_grpc_server
+```
+
+It listens on `127.0.0.1:50051` by default. In a second terminal, activate the
+same environment and call the generated gRPC client. The command prompts for the
+password without saving it in shell history:
+
+```bash
+python manage.py grpc_login admin
+```
+
+For the sample local administrator, enter `Admin@12345` when prompted. A successful
+response shows the user and both JWTs. Stop the server with `Ctrl+C`.
+
+Useful alternatives are:
+
+```bash
+# Use another local port
+python manage.py run_grpc_server --port 50052
+python manage.py grpc_login admin --address 127.0.0.1:50052
+
+# Run only the gRPC tests
+python3 -m pytest tests/test_grpc_authentication.py -v
+```
+
+The contract lives in `services/grpc_api/authentication.proto`. The generated
+`authentication_pb2.py` contains message classes, while
+`authentication_pb2_grpc.py` contains the client stub and server base class. After
+changing the contract, regenerate both checked-in files from the repository root:
+
+```bash
+python -m grpc_tools.protoc \
+  -I. \
+  --python_out=. \
+  --grpc_python_out=. \
+  services/grpc_api/authentication.proto
+```
+
+This server uses an insecure local channel to keep the exercise focused. Bind it
+only to localhost. A production/public gRPC service must use TLS, secret
+management, rate limiting, monitoring, and a deliberate token-storage strategy.
+
 ### 3. Install the frontend
 
 In a second terminal:

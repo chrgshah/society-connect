@@ -3,6 +3,7 @@ exclude: |
     services/migrations/|
     frontend/|
     society_connect/settings/(?:dev|prod|stage)\.sample\.py$|
+    services/grpc_api/.*_pb2(?:_grpc)?\.py$|
     static/|
     media/|
     \.venv/|

@@ -17,4 +17,3 @@ frontend/dist/
 frontend/.vite/
 .DS_Store
 frontend/package-lock.json
-.coveragerc
