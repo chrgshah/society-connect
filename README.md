@@ -86,8 +86,12 @@ Wait until the backend reports that Gunicorn is listening. Then open:
 - Health check: http://localhost:8000/api/v1/health/
 - Django admin: http://localhost:8000/admin/
 
-The first startup creates the PostgreSQL tables automatically. It does not create
-an application user. Create one with:
+Every backend startup applies migrations and loads the checked-in category fixture,
+so the book form has Fiction, Science, History, Mystery, and Biography available.
+The fixture uses stable identifiers and can safely be loaded again after a container
+restart.
+
+Docker does not create an application user. Create one with:
 
 ```bash
 docker compose exec backend python manage.py shell
@@ -124,6 +128,9 @@ docker compose down --volumes
 
 # Apply migrations manually
 docker compose exec backend python manage.py migrate
+
+# Reload the default book categories manually
+docker compose exec backend python manage.py loaddata 2_categories
 
 # Open a Django shell
 docker compose exec backend python manage.py shell

@@ -1,8 +1,26 @@
 """Integration tests for category and book catalog APIs."""
 
 import pytest
+from django.core.management import call_command
 
+from services.models.category import Category
 from tests.helpers import create_book, create_category
+
+
+@pytest.mark.django_db
+def test_default_category_fixture_can_be_loaded_repeatedly():
+    """Verify Docker restarts can safely reload the default categories."""
+    call_command("loaddata", "2_categories", verbosity=0)
+    call_command("loaddata", "2_categories", verbosity=0)
+
+    assert Category.objects.count() == 5
+    assert set(Category.objects.values_list("name", flat=True)) == {
+        "Biography",
+        "Fiction",
+        "History",
+        "Mystery",
+        "Science",
+    }
 
 
 @pytest.mark.django_db
