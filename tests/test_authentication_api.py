@@ -93,3 +93,16 @@ def test_refresh_uses_login_cookie(api_client, staff_user):
     assert response.status_code == 200
     assert response.json()["success"] is True
     assert "nls_access" in response.cookies
+
+
+@pytest.mark.django_db
+def test_refresh_rejects_invalid_token_and_clears_cookies(api_client):
+    """Verify stale refresh cookies return 401 and are removed."""
+    api_client.cookies["nls_refresh"] = "invalid-token"
+
+    response = api_client.post("/api/v1/auth/refresh/", {}, format="json")
+
+    assert response.status_code == 401
+    assert response.json()["message"] == "Refresh token is invalid or expired."
+    assert response.cookies["nls_access"]["max-age"] == 0
+    assert response.cookies["nls_refresh"]["max-age"] == 0

@@ -16,13 +16,13 @@ repos:
   - repo: local
     hooks:
       - id: backend-test-coverage
-        name: backend tests with 90% coverage
+        name: backend tests with 99% coverage
         entry: >-
           python3 -m pytest
           --cov=core
           --cov=services
           --cov-report=term-missing
-          --cov-fail-under=90
+          --cov-fail-under=99
         language: system
         pass_filenames: false
         always_run: true

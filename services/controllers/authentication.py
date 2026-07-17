@@ -1,5 +1,6 @@
 """HTTP controllers for cookie-based authentication workflows."""
 
+import jwt
 from django.conf import settings
 from django.middleware.csrf import get_token
 from rest_framework import status
@@ -9,6 +10,7 @@ from rest_framework.views import APIView
 from core.authentication.jwt_service import invalidate_session
 from core.responses.mixins import ResponseMixin
 from services.factories.authentication import AuthenticationFactory
+from services.models.user import User
 from services.serializers.authentication import (
     LoginSerializer,
     LogoutSerializer,
@@ -36,6 +38,21 @@ def set_auth_cookies(response, tokens):
         secure=settings.JWT_COOKIE_SECURE,
         samesite=settings.JWT_COOKIE_SAMESITE,
         path="/api/v1/auth/",
+    )
+    return response
+
+
+def clear_auth_cookies(response):
+    """Remove access and refresh cookies from an API response."""
+    response.delete_cookie(
+        settings.JWT_ACCESS_COOKIE_NAME,
+        path="/",
+        samesite=settings.JWT_COOKIE_SAMESITE,
+    )
+    response.delete_cookie(
+        settings.JWT_REFRESH_COOKIE_NAME,
+        path="/api/v1/auth/",
+        samesite=settings.JWT_COOKIE_SAMESITE,
     )
     return response
 
@@ -95,7 +112,18 @@ class AuthRefreshController(ResponseMixin, APIView):
                 message="Refresh cookie was not provided.",
                 status_code=status.HTTP_401_UNAUTHORIZED,
             )
-        tokens = AuthenticationFactory.refresh_token(refresh_token)
+        try:
+            tokens = AuthenticationFactory.refresh_token(refresh_token)
+        except (jwt.InvalidTokenError, User.DoesNotExist):
+            logger.warning(
+                "[SOCIETY_CONNECT] event=token_refresh_rejected "
+                "reason=invalid_or_expired_token"
+            )
+            response = self.error_response(
+                message="Refresh token is invalid or expired.",
+                status_code=status.HTTP_401_UNAUTHORIZED,
+            )
+            return clear_auth_cookies(response)
         logger.info("[SOCIETY_CONNECT] event=token_refresh_succeeded")
         response = self.success_response(
             message="Token refreshed successfully.", status_code=status.HTTP_200_OK
@@ -118,17 +146,7 @@ class AuthLogoutController(ResponseMixin, APIView):
         response = self.success_response(
             message="Logged out successfully.", status_code=status.HTTP_200_OK
         )
-        response.delete_cookie(
-            settings.JWT_ACCESS_COOKIE_NAME,
-            path="/",
-            samesite=settings.JWT_COOKIE_SAMESITE,
-        )
-        response.delete_cookie(
-            settings.JWT_REFRESH_COOKIE_NAME,
-            path="/api/v1/auth/",
-            samesite=settings.JWT_COOKIE_SAMESITE,
-        )
-        return response
+        return clear_auth_cookies(response)
 
 
 class AuthMeController(ResponseMixin, APIView):
