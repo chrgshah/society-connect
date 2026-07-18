@@ -17,3 +17,5 @@ class DashboardSummaryController(ResponseMixin, APIView):
         return self.success_response(
             data=serializer.data, message="Dashboard summary retrieved successfully."
         )
+
+    serializer_class = DashboardSummarySerializer

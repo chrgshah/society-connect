@@ -36,7 +36,7 @@ export const BookFormPage = () => {
       setCategoriesLoading(true);
       try {
         const categoriesResponse = await getCategories();
-        setCategories(categoriesResponse.data.data);
+        setCategories(categoriesResponse.data.data.results);
 
         if (id && id !== 'new') {
           const response = await getBook(id);

@@ -13,6 +13,9 @@ import { MemberFormPage } from '../pages/MemberFormPage';
 import { MemberListPage } from '../pages/MemberListPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { OverdueListPage } from '../pages/OverdueListPage';
+import { CategoryListPage } from '../pages/CategoryListPage';
+import { CategoryDetailPage } from '../pages/CategoryDetailPage';
+import { CategoryFormPage } from '../pages/CategoryFormPage';
 
 export const AppRoutes = () => (
   <Routes>
@@ -31,6 +34,10 @@ export const AppRoutes = () => (
         <Route path="/borrow" element={<BorrowBookPage />} />
         <Route path="/lendings" element={<LendingListPage />} />
         <Route path="/overdue" element={<OverdueListPage />} />
+        <Route path="/categories" element={<CategoryListPage />} />
+        <Route path="/categories/new" element={<CategoryFormPage />} />
+        <Route path="/categories/:id" element={<CategoryDetailPage />} />
+        <Route path="/categories/:id/edit" element={<CategoryFormPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Route>

@@ -7,4 +7,4 @@ export const createBook = (payload: Partial<Book> & { category_uuid?: string }) 
 export const updateBook = (uuid: string, payload: Partial<Book> & { category_uuid?: string }) => apiClient.patch<ApiResponse<Book>>(`/books/${uuid}/`, payload);
 export const deactivateBook = (uuid: string) => apiClient.delete<ApiResponse<unknown>>(`/books/${uuid}/`);
 export const getBook = (uuid: string) => apiClient.get<ApiResponse<Book>>(`/books/${uuid}/`);
-export const getCategories = () => apiClient.get<ApiResponse<Category[]>>('/categories/');
+export const getCategories = () => apiClient.get<ApiResponse<PaginatedData<Category>>>('/categories/', { params: { page_size: 100 } });

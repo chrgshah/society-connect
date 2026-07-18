@@ -8,7 +8,7 @@ from core.responses.mixins import ResponseMixin
 from services.factories.book import BookFactory
 from services.models.book import Book
 from services.models.category import Category
-from services.serializers.book import BookSerializer, CategorySerializer
+from services.serializers.book import BookCategorySerializer, BookSerializer
 from services.shared.logger import logger
 
 
@@ -19,13 +19,15 @@ class CategoryListController(ResponseMixin, APIView):
         """Return categories ordered by display name."""
         categories = Category.objects.filter(deleted_at__isnull=True).order_by("name")
         return self.success_response(
-            data=CategorySerializer(categories, many=True).data,
+            data=BookCategorySerializer(categories, many=True).data,
             message="Categories retrieved successfully.",
         )
 
 
 class BookListController(ResponseMixin, APIView):
     """Search, paginate, and create books."""
+
+    serializer_class = BookSerializer
 
     def get(self, request):
         """Return a filtered page of non-deleted books."""
@@ -69,6 +71,8 @@ class BookListController(ResponseMixin, APIView):
 
 class BookDetailController(ResponseMixin, APIView):
     """Retrieve, modify, or deactivate an individual book."""
+
+    serializer_class = BookSerializer
 
     def get(self, request, uuid):
         """Return one non-deleted book by UUID."""

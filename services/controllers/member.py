@@ -14,6 +14,8 @@ from services.shared.logger import logger
 class MemberListController(ResponseMixin, APIView):
     """Search, paginate, and create society members."""
 
+    serializer_class = MemberSerializer
+
     def get(self, request):
         """Return a filtered page of non-deleted members."""
         queryset = MemberFactory.get_queryset(
@@ -53,6 +55,8 @@ class MemberListController(ResponseMixin, APIView):
 
 class MemberDetailController(ResponseMixin, APIView):
     """Retrieve, modify, or deactivate an individual member."""
+
+    serializer_class = MemberSerializer
 
     def get(self, request, uuid):
         """Return one non-deleted member by UUID."""

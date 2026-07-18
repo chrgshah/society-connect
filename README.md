@@ -308,6 +308,21 @@ The Compose credentials are for local use only. Replace the secret key, database
 password, allowed hosts, and origin values before deploying anywhere public. Keep
 secure-cookie settings enabled when using HTTPS.
 
+## Swagger developer documentation
+
+Start the Django server and open `http://localhost:8000/api/docs/`. The raw
+OpenAPI schema is available at `http://localhost:8000/api/schema/`.
+
+Authentication uses secure HTTP-only cookies. In Swagger, run these operations
+in order:
+
+1. `GET /api/v1/auth/csrf/`
+2. `POST /api/v1/auth/login/` with a valid username and password
+3. Call the protected APIs. Swagger sends the login cookies automatically.
+
+For `POST`, `PATCH`, `PUT`, and `DELETE` operations, Swagger also sends the CSRF
+token created by the first step. Use `POST /api/v1/auth/logout/` when finished.
+
 ## Testing and quality checks
 
 The test suite uses the existing development settings and its configured
