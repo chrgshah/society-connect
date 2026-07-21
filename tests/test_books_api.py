@@ -1,26 +1,8 @@
-"""Integration tests for category and book catalog APIs."""
+"""Integration tests for book catalog APIs."""
 
 import pytest
-from django.core.management import call_command
 
-from services.models.category import Category
 from tests.helpers import create_book, create_category
-
-
-@pytest.mark.django_db
-def test_default_category_fixture_can_be_loaded_repeatedly():
-    """Verify Docker restarts can safely reload the default categories."""
-    call_command("loaddata", "2_categories", verbosity=0)
-    call_command("loaddata", "2_categories", verbosity=0)
-
-    assert Category.objects.count() == 5
-    assert set(Category.objects.values_list("name", flat=True)) == {
-        "Biography",
-        "Fiction",
-        "History",
-        "Mystery",
-        "Science",
-    }
 
 
 @pytest.mark.django_db
@@ -64,18 +46,6 @@ def test_update_book_author(authenticated_client):
     book.refresh_from_db()
     assert book.author == "Updated Author"
     assert response.json()["data"]["author"] == "Updated Author"
-
-
-@pytest.mark.django_db
-def test_list_categories(authenticated_client):
-    """Verify the category endpoint returns existing categories."""
-    category = create_category(name="Fiction")
-
-    response = authenticated_client.get("/api/v1/categories/")
-
-    assert response.status_code == 200
-    assert response.json()["data"][0]["uuid"] == str(category.uuid)
-    assert response.json()["data"][0]["name"] == "Fiction"
 
 
 @pytest.mark.django_db

@@ -1,6 +1,7 @@
 """Request and response serializers for lending workflows."""
 
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 
 from services.models.lending import Lending
 
@@ -42,10 +43,12 @@ class LendingSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    @extend_schema_field(serializers.DictField)
     def get_member(self, obj):
         """Return compact member identity data for a lending."""
         return {"uuid": str(obj.member.uuid), "full_name": obj.member.full_name}
 
+    @extend_schema_field(serializers.DictField)
     def get_book(self, obj):
         """Return compact book identity data for a lending."""
         return {"uuid": str(obj.book.uuid), "title": obj.book.title}

@@ -11,11 +11,14 @@ from services.models.member import Member
 from services.serializers.lending import (
     BorrowBookSerializer,
     LendingSerializer,
+    ReturnBookSerializer,
 )
 
 
 class BorrowBookController(ResponseMixin, APIView):
     """Create a lending after validating member and book eligibility."""
+
+    serializer_class = BorrowBookSerializer
 
     def post(self, request):
         """Borrow an available book for an active member."""
@@ -37,6 +40,8 @@ class BorrowBookController(ResponseMixin, APIView):
 class ReturnBookController(ResponseMixin, APIView):
     """Mark an active lending as returned."""
 
+    serializer_class = ReturnBookSerializer
+
     def post(self, request, uuid):
         """Return the book associated with the lending UUID."""
         lending = get_object_or_404(Lending, uuid=uuid, deleted_at__isnull=True)
@@ -48,6 +53,8 @@ class ReturnBookController(ResponseMixin, APIView):
 
 class LendingListController(ResponseMixin, APIView):
     """Search and paginate lending history."""
+
+    serializer_class = LendingSerializer
 
     def get(self, request):
         """Return a filtered page of lending records."""
@@ -77,6 +84,8 @@ class LendingListController(ResponseMixin, APIView):
 class LendingDetailController(ResponseMixin, APIView):
     """Retrieve an individual lending record."""
 
+    serializer_class = LendingSerializer
+
     def get(self, request, uuid):
         """Return one non-deleted lending by UUID."""
         lending = get_object_or_404(Lending, uuid=uuid, deleted_at__isnull=True)
@@ -88,6 +97,8 @@ class LendingDetailController(ResponseMixin, APIView):
 
 class MemberBorrowedBooksController(ResponseMixin, APIView):
     """List books currently borrowed by a member."""
+
+    serializer_class = LendingSerializer
 
     def get(self, request, member_uuid):
         """Return active borrowings for the specified member."""
@@ -101,6 +112,8 @@ class MemberBorrowedBooksController(ResponseMixin, APIView):
 
 class OverdueListController(ResponseMixin, APIView):
     """List lending records whose due date has passed."""
+
+    serializer_class = LendingSerializer
 
     def get(self, request):
         """Return all borrowed or overdue records past their due date."""

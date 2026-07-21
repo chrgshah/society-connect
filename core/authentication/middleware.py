@@ -24,6 +24,8 @@ class JWTSessionMiddleware:
         path = request.path
         if (
             path.startswith("/admin/")
+            or path.startswith("/api/docs/")
+            or path.startswith("/api/schema/")
             or path.startswith("/static/")
             or path.startswith("/media/")
             or path
