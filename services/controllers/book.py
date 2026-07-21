@@ -29,7 +29,7 @@ class BookListController(ResponseMixin, GenericAPIView):
     ordering = ["title"]
 
     def get_queryset(self):
-        return Book.objects.filter(deleted_at__isnull=True).select_related("category")
+        return Book.objects.select_related("category")
 
     def get(self, request):
         """Return a filtered page of non-deleted books."""
@@ -67,7 +67,6 @@ class BookOptionsController(ResponseMixin, GenericAPIView):
     def get_queryset(self):
         return (
             Book.objects.filter(
-                deleted_at__isnull=True,
                 is_active=True,
                 available_copies__gt=0,
             )
@@ -90,14 +89,14 @@ class BookDetailController(ResponseMixin, APIView):
 
     def get(self, request, uuid):
         """Return one non-deleted book by UUID."""
-        book = get_object_or_404(Book, uuid=uuid, deleted_at__isnull=True)
+        book = get_object_or_404(Book, uuid=uuid)
         return self.success_response(
             data=BookSerializer(book).data, message="Book retrieved successfully."
         )
 
     def patch(self, request, uuid):
         """Apply a partial update to a book."""
-        book = get_object_or_404(Book, uuid=uuid, deleted_at__isnull=True)
+        book = get_object_or_404(Book, uuid=uuid)
         serializer = BookSerializer(book, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         book = BookFactory.update_book(book, serializer.validated_data)
@@ -116,10 +115,8 @@ class BookDetailController(ResponseMixin, APIView):
 
     def delete(self, request, uuid):
         """Soft-delete a book while retaining its historical data."""
-        book = get_object_or_404(Book, uuid=uuid, deleted_at__isnull=True)
-        if book.lendings.filter(
-            deleted_at__isnull=True, status__in=["BORROWED", "OVERDUE"]
-        ).exists():
+        book = get_object_or_404(Book, uuid=uuid)
+        if book.lendings.filter(status__in=["BORROWED", "OVERDUE"]).exists():
             raise ActiveLendingError(
                 "A book with active lendings cannot be deactivated."
             )

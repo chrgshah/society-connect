@@ -79,7 +79,7 @@ class BookSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_category_uuid(self, value):
-        if not Category.objects.filter(uuid=value, deleted_at__isnull=True).exists():
+        if not Category.objects.filter(uuid=value).exists():
             raise serializers.ValidationError("Category not found.")
         return value
 

@@ -4,10 +4,10 @@ from django.db import models
 
 from services.shared.password import hash_string, verify_hash
 
-from .base import BaseModel
+from .base import BaseModel, SoftDeleteManager
 
 
-class UserManager(models.Manager):
+class UserManager(SoftDeleteManager):
     """Create users while normalizing identity fields and hashing passwords."""
 
     def create_user(self, username, email, password=None, **extra_fields):

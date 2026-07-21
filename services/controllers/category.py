@@ -25,7 +25,7 @@ class CategoryListController(ResponseMixin, GenericAPIView):
     ordering = ["name"]
 
     def get_queryset(self):
-        return Category.objects.filter(deleted_at__isnull=True)
+        return Category.objects.all()
 
     def get(self, request):
         """Return a filtered page of non-deleted categories."""
@@ -61,7 +61,7 @@ class CategoryOptionsController(ResponseMixin, GenericAPIView):
     search_fields = ["name", "description"]
 
     def get_queryset(self):
-        return Category.objects.filter(deleted_at__isnull=True).order_by("name")
+        return Category.objects.order_by("name")
 
     def get(self, request):
         categories = self.filter_queryset(self.get_queryset())[:50]
@@ -78,7 +78,7 @@ class CategoryDetailController(ResponseMixin, APIView):
 
     def get(self, request, uuid):
         """Return one non-deleted category by UUID."""
-        category = get_object_or_404(Category, uuid=uuid, deleted_at__isnull=True)
+        category = get_object_or_404(Category, uuid=uuid)
         return self.success_response(
             data=CategorySerializer(category).data,
             message="Category retrieved successfully.",
@@ -86,7 +86,7 @@ class CategoryDetailController(ResponseMixin, APIView):
 
     def patch(self, request, uuid):
         """Apply a partial update to a category."""
-        category = get_object_or_404(Category, uuid=uuid, deleted_at__isnull=True)
+        category = get_object_or_404(Category, uuid=uuid)
         serializer = CategorySerializer(category, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         category = CategoryFactory.update_category(category, serializer.validated_data)
@@ -106,7 +106,7 @@ class CategoryDetailController(ResponseMixin, APIView):
 
     def delete(self, request, uuid):
         """Soft-delete a category while retaining its historical data."""
-        category = get_object_or_404(Category, uuid=uuid, deleted_at__isnull=True)
+        category = get_object_or_404(Category, uuid=uuid)
         category.soft_delete()
         logger.info(
             "[SOCIETY_CONNECT] event=category_deactivated category_uuid=%s user_id=%s",

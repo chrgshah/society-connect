@@ -29,7 +29,7 @@ class MemberListController(ResponseMixin, GenericAPIView):
     ordering = ["-created_at"]
 
     def get_queryset(self):
-        return Member.objects.filter(deleted_at__isnull=True)
+        return Member.objects.all()
 
     def get(self, request):
         """Return a filtered page of non-deleted members."""
@@ -65,9 +65,7 @@ class MemberOptionsController(ResponseMixin, GenericAPIView):
     search_fields = ["first_name", "last_name", "email", "membership_number"]
 
     def get_queryset(self):
-        return Member.objects.filter(deleted_at__isnull=True, is_active=True).order_by(
-            "first_name", "last_name"
-        )
+        return Member.objects.filter(is_active=True).order_by("first_name", "last_name")
 
     def get(self, request):
         members = self.filter_queryset(self.get_queryset())[:50]
@@ -84,14 +82,14 @@ class MemberDetailController(ResponseMixin, APIView):
 
     def get(self, request, uuid):
         """Return one non-deleted member by UUID."""
-        member = get_object_or_404(Member, uuid=uuid, deleted_at__isnull=True)
+        member = get_object_or_404(Member, uuid=uuid)
         return self.success_response(
             data=MemberSerializer(member).data, message="Member retrieved successfully."
         )
 
     def patch(self, request, uuid):
         """Apply a partial update to a member."""
-        member = get_object_or_404(Member, uuid=uuid, deleted_at__isnull=True)
+        member = get_object_or_404(Member, uuid=uuid)
         serializer = MemberSerializer(member, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         member = MemberFactory.update_member(member, serializer.validated_data)
@@ -110,10 +108,8 @@ class MemberDetailController(ResponseMixin, APIView):
 
     def delete(self, request, uuid):
         """Soft-delete a member while retaining historical records."""
-        member = get_object_or_404(Member, uuid=uuid, deleted_at__isnull=True)
-        if member.lendings.filter(
-            deleted_at__isnull=True, status__in=["BORROWED", "OVERDUE"]
-        ).exists():
+        member = get_object_or_404(Member, uuid=uuid)
+        if member.lendings.filter(status__in=["BORROWED", "OVERDUE"]).exists():
             raise ActiveLendingError(
                 "A member with active lendings cannot be deactivated."
             )

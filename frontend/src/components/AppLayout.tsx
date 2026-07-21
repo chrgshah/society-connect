@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Avatar, Dropdown, Layout, Menu, Space, Typography } from 'antd';
-import { BookOutlined, ClockCircleOutlined, DashboardOutlined, LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, SwapOutlined, TeamOutlined } from '@ant-design/icons';
+import { BookOutlined, ClockCircleOutlined, DashboardOutlined, MoneyCollectOutlined, DownCircleOutlined, LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, SwapOutlined, TeamOutlined } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useToast } from './ToastProvider';
@@ -21,9 +21,9 @@ export const AppLayout = () => {
       { key: ROUTES.members, icon: <TeamOutlined />, label: <Link to={ROUTES.members}>Members</Link> },
       { key: ROUTES.books, icon: <BookOutlined />, label: <Link to={ROUTES.books}>Books</Link> },
       { key: ROUTES.borrow, icon: <SwapOutlined />, label: <Link to={ROUTES.borrow}>Borrow Book</Link> },
-      { key: ROUTES.lendings, icon: <ClockCircleOutlined />, label: <Link to={ROUTES.lendings}>Lending Records</Link> },
+      { key: ROUTES.lendings, icon: <MoneyCollectOutlined />, label: <Link to={ROUTES.lendings}>Lending Records</Link> },
       { key: ROUTES.overdue, icon: <ClockCircleOutlined />, label: <Link to={ROUTES.overdue}>Overdue Books</Link> },
-      { key: ROUTES.categories, icon: <ClockCircleOutlined />, label: <Link to={ROUTES.categories}>Categories</Link> },
+      { key: ROUTES.categories, icon: <DownCircleOutlined />, label: <Link to={ROUTES.categories}>Categories</Link> },
     ],
     [],
   );

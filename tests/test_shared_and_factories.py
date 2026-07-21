@@ -134,3 +134,5 @@ def test_model_display_and_deletion_properties(staff_user):
     assert staff_user.is_deleted is False
     staff_user.soft_delete()
     assert staff_user.is_deleted is True
+    assert not User.objects.filter(pk=staff_user.pk).exists()
+    assert User.all_objects.filter(pk=staff_user.pk).exists()

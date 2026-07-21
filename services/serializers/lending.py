@@ -23,12 +23,12 @@ class BorrowBookSerializer(serializers.Serializer):
     )
 
     def validate_member_uuid(self, value):
-        if not Member.objects.filter(uuid=value, deleted_at__isnull=True).exists():
+        if not Member.objects.filter(uuid=value).exists():
             raise serializers.ValidationError("Member not found.")
         return value
 
     def validate_book_uuid(self, value):
-        if not Book.objects.filter(uuid=value, deleted_at__isnull=True).exists():
+        if not Book.objects.filter(uuid=value).exists():
             raise serializers.ValidationError("Book not found.")
         return value
 

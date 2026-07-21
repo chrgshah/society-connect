@@ -33,7 +33,7 @@ class MemberFactory:
     @staticmethod
     def get_queryset(search=None, is_active=None):
         """Build a member queryset from optional text and status filters."""
-        queryset = Member.objects.filter(deleted_at__isnull=True)
+        queryset = Member.objects.all()
         if search:
             queryset = queryset.filter(
                 Q(first_name__icontains=search)
@@ -49,8 +49,6 @@ class MemberFactory:
     @staticmethod
     def _generate_membership_number():
         """Generate the next human-readable membership number."""
-        last_member = (
-            Member.objects.filter(deleted_at__isnull=True).order_by("-id").first()
-        )
+        last_member = Member.objects.order_by("-id").first()
         next_id = (last_member.id if last_member else 0) + 1
         return f"MEM-{next_id:06d}"

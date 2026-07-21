@@ -102,7 +102,7 @@ class JWTSessionMiddleware:
             return clear_auth_cookies(response)
 
         try:
-            user = User.objects.get(id=user_id, is_active=True, deleted_at__isnull=True)
+            user = User.objects.get(id=user_id, is_active=True)
         except User.DoesNotExist:
             logger.warning(
                 "[SOCIETY_CONNECT] event=auth_rejected reason=user_not_found "

@@ -20,9 +20,7 @@ class DashboardFactory:
             datetime.combine(to_date + timedelta(days=1), time.min)
         )
         created_range = {"created_at__gte": start_at, "created_at__lt": end_at}
-        book_totals = Book.objects.filter(
-            deleted_at__isnull=True, **created_range
-        ).aggregate(
+        book_totals = Book.objects.filter(**created_range).aggregate(
             total_books=Count("id"),
             total_copies=Sum("total_copies", default=0),
             available_copies=Sum("available_copies", default=0),
@@ -31,16 +29,13 @@ class DashboardFactory:
         total_copies = book_totals["total_copies"]
         available_copies = book_totals["available_copies"]
         borrowed_copies = total_copies - available_copies
-        member_totals = Member.objects.filter(
-            deleted_at__isnull=True, **created_range
-        ).aggregate(
+        member_totals = Member.objects.filter(**created_range).aggregate(
             total_members=Count("id"),
             active_members=Count("id", filter=Q(is_active=True)),
         )
         total_members = member_totals["total_members"]
         active_members = member_totals["active_members"]
         overdue_borrowings = Lending.objects.filter(
-            deleted_at__isnull=True,
             status=Lending.Status.OVERDUE,
             borrowed_at__gte=start_at,
             borrowed_at__lt=end_at,

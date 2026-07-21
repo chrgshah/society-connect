@@ -44,7 +44,7 @@ class MemberSerializer(serializers.ModelSerializer):
         """Normalize email and reject duplicates outside the current member."""
         value = value.strip().lower()
         if (
-            Member.objects.filter(email__iexact=value, deleted_at__isnull=True)
+            Member.objects.filter(email__iexact=value)
             .exclude(pk=self.instance.pk if self.instance else None)
             .exists()
         ):
@@ -54,7 +54,7 @@ class MemberSerializer(serializers.ModelSerializer):
     def validate_membership_number(self, value):
         """Reject duplicate membership numbers outside the current member."""
         if (
-            Member.objects.filter(membership_number=value, deleted_at__isnull=True)
+            Member.objects.filter(membership_number=value)
             .exclude(pk=self.instance.pk if self.instance else None)
             .exists()
         ):

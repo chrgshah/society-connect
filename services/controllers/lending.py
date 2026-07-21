@@ -49,7 +49,7 @@ class ReturnBookController(ResponseMixin, APIView):
 
     def post(self, request, uuid):
         """Return the book associated with the lending UUID."""
-        lending = get_object_or_404(Lending, uuid=uuid, deleted_at__isnull=True)
+        lending = get_object_or_404(Lending, uuid=uuid)
         lending = LendingFactory.return_book(lending.uuid)
         return self.success_response(
             data=LendingSerializer(lending).data, message="Book returned successfully."
@@ -68,9 +68,7 @@ class LendingListController(ResponseMixin, GenericAPIView):
     ordering = ["-borrowed_at"]
 
     def get_queryset(self):
-        return Lending.objects.filter(deleted_at__isnull=True).select_related(
-            "member", "book"
-        )
+        return Lending.objects.select_related("member", "book")
 
     def get(self, request):
         """Return a filtered page of lending records."""
@@ -89,7 +87,7 @@ class LendingDetailController(ResponseMixin, APIView):
 
     def get(self, request, uuid):
         """Return one non-deleted lending by UUID."""
-        lending = get_object_or_404(Lending, uuid=uuid, deleted_at__isnull=True)
+        lending = get_object_or_404(Lending, uuid=uuid)
         return self.success_response(
             data=LendingSerializer(lending).data,
             message="Lending retrieved successfully.",
@@ -103,7 +101,7 @@ class MemberBorrowedBooksController(ResponseMixin, APIView):
 
     def get(self, request, member_uuid):
         """Return active borrowings for the specified member."""
-        member = get_object_or_404(Member, uuid=member_uuid, deleted_at__isnull=True)
+        member = get_object_or_404(Member, uuid=member_uuid)
         lendings = LendingFactory.get_member_borrowed_books(member.uuid)
         return self.success_response(
             data=LendingSerializer(lendings, many=True).data,

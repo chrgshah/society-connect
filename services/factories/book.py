@@ -42,9 +42,7 @@ class BookFactory:
         search=None, author=None, category_uuid=None, is_available=None, is_active=None
     ):
         """Build a book queryset from optional catalog filters."""
-        queryset = Book.objects.filter(deleted_at__isnull=True).select_related(
-            "category"
-        )
+        queryset = Book.objects.select_related("category")
         if search:
             queryset = queryset.filter(title__icontains=search) | queryset.filter(
                 isbn__icontains=search
