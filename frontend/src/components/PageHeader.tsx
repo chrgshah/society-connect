@@ -7,13 +7,13 @@ interface PageHeaderProps {
 }
 
 export const PageHeader = ({ title, description, extra }: PageHeaderProps) => (
-  <div style={{ marginBottom: 24 }}>
+  <div className="page-header">
     <Space direction="vertical" size="small">
-      <Typography.Title level={3} style={{ margin: 0 }}>
+      <Typography.Title level={3} className="page-header-title">
         {title}
       </Typography.Title>
       {description ? <Typography.Text type="secondary">{description}</Typography.Text> : null}
     </Space>
-    {extra ? <div style={{ marginTop: 16 }}>{extra}</div> : null}
+    {extra ? <div className="page-header-extra">{extra}</div> : null}
   </div>
 );

@@ -6,6 +6,7 @@ from django.db.models import Q
 from services.models.book import Book
 from services.models.lending import Lending
 from services.models.member import Member
+from services.shared.date_ranges import validate_date_range
 
 
 def build_search_filter(search: str, fields):
@@ -56,3 +57,10 @@ class LendingFilter(filters.FilterSet):
     class Meta:
         model = Lending
         fields = ["status", "member_uuid", "book_uuid", "from_date", "to_date"]
+
+    def filter_queryset(self, queryset):
+        from_date = self.form.cleaned_data.get("from_date")
+        to_date = self.form.cleaned_data.get("to_date")
+        if from_date and to_date:
+            validate_date_range(from_date, to_date)
+        return super().filter_queryset(queryset)

@@ -4,7 +4,10 @@ from rest_framework.views import APIView
 
 from core.responses.mixins import ResponseMixin
 from services.factories.dashboard import DashboardFactory
-from services.serializers.dashboard import DashboardSummarySerializer
+from services.serializers.dashboard import (
+    DashboardDateRangeSerializer,
+    DashboardSummarySerializer,
+)
 
 
 class DashboardSummaryController(ResponseMixin, APIView):
@@ -12,7 +15,9 @@ class DashboardSummaryController(ResponseMixin, APIView):
 
     def get(self, request):
         """Calculate, serialize, and return dashboard counters."""
-        summary = DashboardFactory.get_summary()
+        query = DashboardDateRangeSerializer(data=request.query_params)
+        query.is_valid(raise_exception=True)
+        summary = DashboardFactory.get_summary(**query.validated_data)
         serializer = DashboardSummarySerializer(summary)
         return self.success_response(
             data=serializer.data, message="Dashboard summary retrieved successfully."

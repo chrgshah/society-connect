@@ -1,3 +1,10 @@
 .app-alert, .list-toolbar { margin-bottom: 16px; }
 .dashboard-recent, .member-borrowed { margin-top: 24px; }
 .loading-container { padding: 24px; text-align: center; }
+.page-header { align-items: flex-start; display: flex; justify-content: space-between; margin-bottom: 24px; gap: 16px; }
+.page-header-title { margin: 0 !important; }
+.page-header-extra { margin-left: auto; }
+@media (max-width: 576px) {
+  .page-header { flex-direction: column; }
+  .page-header-extra { margin-left: 0; width: 100%; }
+}
