@@ -18,7 +18,7 @@ class BorrowBookSerializer(serializers.Serializer):
         required=False,
         allow_blank=True,
         default="",
-        max_length=2000,
+        max_length=2500,
         trim_whitespace=True,
     )
 

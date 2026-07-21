@@ -27,7 +27,7 @@ class Lending(BaseModel):
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.BORROWED
     )
-    notes = models.TextField(blank=True)
+    notes = models.TextField(blank=True, max_length=2500)
 
     class Meta:
         """Show the newest borrowings first by default."""

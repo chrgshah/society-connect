@@ -89,3 +89,16 @@ def test_put_category_uses_update_behavior(authenticated_client):
 
     assert response.status_code == 200
     assert response.json()["data"]["description"] == "Updated through PUT"
+
+
+@pytest.mark.django_db
+def test_category_rejects_description_over_2500_characters(authenticated_client):
+    """Verify category descriptions enforce the documented maximum length."""
+    response = authenticated_client.post(
+        "/api/v1/categories/",
+        {"name": "Too Long", "description": "x" * 2501},
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert "description" in response.json()["errors"]

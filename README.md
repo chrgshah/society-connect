@@ -92,8 +92,9 @@ Wait until the backend reports that Gunicorn is listening. Then open:
 
 - Application: http://localhost:5173
 - Backend API: http://localhost:8000/api/v1/
+- API documentation: http://localhost:8000/api/docs/
+- OpenAPI schema: http://localhost:8000/api/schema/
 - Health check: http://localhost:8000/api/v1/health/
-- Django admin: http://localhost:8000/admin/
 
 Every backend startup applies migrations and loads the checked-in category fixture,
 so the book form has Fiction, Science, History, Mystery, and Biography available.

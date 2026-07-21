@@ -17,7 +17,7 @@ class Book(BaseModel):
     )
     publisher = models.CharField(max_length=255, blank=True)
     published_year = models.IntegerField(null=True, blank=True)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, max_length=2500)
     total_copies = models.PositiveIntegerField(default=1)
     available_copies = models.PositiveIntegerField(default=1)
     shelf_location = models.CharField(max_length=100, blank=True)

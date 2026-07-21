@@ -106,7 +106,7 @@ export const BookFormPage = () => {
     <div>
       <PageHeader title={id && id !== 'new' ? 'Edit Book' : 'Create Book'} description="Add or edit a library book" />
       <Card>
-        {error ? <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} /> : null}
+        {error ? <Alert type="error" message={error} showIcon className="app-alert" /> : null}
         <Form
           form={form}
           layout="vertical"
@@ -143,16 +143,16 @@ export const BookFormPage = () => {
             <Input />
           </Form.Item>
           <Form.Item label="Published Year" name="published_year">
-            <InputNumber min={0} max={new Date().getFullYear()} style={{ width: '100%' }} />
+            <InputNumber min={0} max={new Date().getFullYear()} className="full-width-control" />
           </Form.Item>
-          <Form.Item label="Description" name="description">
-            <Input.TextArea />
+          <Form.Item label="Description" name="description" rules={[{ max: 2500, message: 'Description cannot exceed 2,500 characters' }]}>
+            <Input.TextArea maxLength={2500} showCount />
           </Form.Item>
           <Form.Item label="Total Copies" name="total_copies" rules={[{ required: true, message: 'Please enter Total Copies' }]}>
-            <InputNumber min={1} style={{ width: '100%' }} />
+            <InputNumber min={1} className="full-width-control" />
           </Form.Item>
           <Form.Item label="Available Copies" name="available_copies" dependencies={['total_copies']} rules={[{ required: true, message: 'Please enter Available Copies' }, ({ getFieldValue }) => ({ validator(_, value) { return value <= getFieldValue('total_copies') ? Promise.resolve() : Promise.reject(new Error('Available copies cannot exceed total copies')); } })]}>
-            <InputNumber min={0} style={{ width: '100%' }} />
+            <InputNumber min={0} className="full-width-control" />
           </Form.Item>
           <Form.Item label="Shelf Location" name="shelf_location">
             <Input />

@@ -23,8 +23,7 @@ class JWTSessionMiddleware:
         """Authenticate a request, validate CSRF when needed, and continue."""
         path = request.path
         if (
-            path.startswith("/admin/")
-            or path.startswith("/api/docs/")
+            path.startswith("/api/docs/")
             or path.startswith("/api/schema/")
             or path.startswith("/static/")
             or path.startswith("/media/")

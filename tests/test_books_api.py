@@ -32,6 +32,26 @@ def test_create_book(authenticated_client):
 
 
 @pytest.mark.django_db
+def test_book_rejects_description_over_2500_characters(authenticated_client):
+    """Verify book descriptions enforce the documented maximum length."""
+    category = create_category()
+    response = authenticated_client.post(
+        "/api/v1/books/",
+        {
+            "isbn": "9784444444444",
+            "title": "Long Description",
+            "author": "Author",
+            "category_uuid": str(category.uuid),
+            "description": "x" * 2501,
+        },
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert "description" in response.json()["errors"]
+
+
+@pytest.mark.django_db
 def test_update_book_author(authenticated_client):
     """Verify a book's author can be updated."""
     book = create_book(author="Original Author")

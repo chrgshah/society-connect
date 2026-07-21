@@ -35,29 +35,19 @@ export const AppLayout = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout className="app-shell">
       <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme="light">
         <div
           title="Society Connect"
-          style={{
-            alignItems: 'center',
-            display: 'flex',
-            fontWeight: 700,
-            height: 64,
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            lineHeight: 1.2,
-            overflow: 'hidden',
-            padding: collapsed ? '0 8px' : '0 16px',
-            whiteSpace: collapsed ? 'nowrap' : 'normal',
-          }}
+          className={`app-brand ${collapsed ? 'app-brand-collapsed' : 'app-brand-expanded'}`}
         >
           {collapsed ? 'SC' : 'Society Connect'}
         </div>
         <Menu selectedKeys={[location.pathname]} mode="inline" items={items} />
       </Sider>
       <Layout>
-        <Header style={{ background: '#fff', padding: '0 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div onClick={() => setCollapsed(!collapsed)} style={{ cursor: 'pointer' }}>
+        <Header className="app-header">
+          <div onClick={() => setCollapsed(!collapsed)} className="app-menu-toggle">
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
           <Dropdown
@@ -71,7 +61,7 @@ export const AppLayout = () => {
             </Space>
           </Dropdown>
         </Header>
-        <Content style={{ margin: 16, background: '#fff', padding: 24 }}>
+        <Content className="app-content">
           <Outlet />
         </Content>
       </Layout>

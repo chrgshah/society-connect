@@ -67,7 +67,7 @@ export const DashboardPage = () => {
           />
         )}
       />
-      {error ? <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} /> : null}
+      {error ? <Alert type="error" message={error} showIcon className="app-alert" /> : null}
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={8}><StatCard title="Total Books" value={summary.total_books ?? 0} /></Col>
         <Col xs={24} sm={12} md={8}><StatCard title="Available Copies" value={summary.available_copies ?? 0} /></Col>
@@ -76,7 +76,7 @@ export const DashboardPage = () => {
         <Col xs={24} sm={12} md={8}><StatCard title="Active Members" value={summary.active_members ?? 0} /></Col>
         <Col xs={24} sm={12} md={8}><StatCard title="Overdue" value={summary.overdue_borrowings ?? 0} /></Col>
       </Row>
-      <Card title="Recent Lending Records" style={{ marginTop: 24 }}>
+      <Card title="Recent Lending Records" className="dashboard-recent">
         <Table
           dataSource={lendings}
           rowKey="uuid"

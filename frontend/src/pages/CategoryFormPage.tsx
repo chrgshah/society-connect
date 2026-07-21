@@ -60,12 +60,14 @@ export const CategoryFormPage = () => {
     <div>
       <PageHeader title={isEditing ? 'Edit Category' : 'Create Category'} description="Add or edit a book category" />
       <Card>
-        {error ? <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} /> : null}
+        {error ? <Alert type="error" message={error} showIcon className="app-alert" /> : null}
         <Form form={form} layout="vertical" onFinish={onFinish} onValuesChange={() => { if (error) setError(''); }}>
           <Form.Item label="Name" name="name" rules={[{ required: true, whitespace: true, message: 'Please enter a category name' }]}>
             <Input maxLength={200} />
           </Form.Item>
-          <Form.Item label="Description" name="description"><Input.TextArea rows={4} /></Form.Item>
+          <Form.Item label="Description" name="description" rules={[{ max: 2500, message: 'Description cannot exceed 2,500 characters' }]}>
+            <Input.TextArea rows={4} maxLength={2500} showCount />
+          </Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>Save</Button>
         </Form>
       </Card>

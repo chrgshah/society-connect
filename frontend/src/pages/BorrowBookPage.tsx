@@ -121,8 +121,8 @@ export const BorrowBookPage = () => {
     <div>
       <PageHeader title="Borrow Book" description="Create a new borrowing record" />
       <Card>
-        {message ? <Alert type="success" message={message} style={{ marginBottom: 16 }} /> : null}
-        {error ? <Alert type="error" message={error} style={{ marginBottom: 16 }} /> : null}
+        {message ? <Alert type="success" message={message} className="app-alert" /> : null}
+        {error ? <Alert type="error" message={error} className="app-alert" /> : null}
         <Form form={form} layout="vertical" onFinish={onFinish} onValuesChange={() => { setError(''); setMessage(''); }}>
           <Form.Item label="Member" name="member_uuid" rules={[{ required: true, message: 'Please select a Member' }]}>
             <Select
@@ -148,10 +148,10 @@ export const BorrowBookPage = () => {
             />
           </Form.Item>
           <Form.Item label="Due Date" name="due_at">
-            <DatePicker showTime style={{ width: '100%' }} />
+            <DatePicker showTime className="full-width-control" />
           </Form.Item>
-          <Form.Item label="Notes" name="notes">
-            <Input.TextArea />
+          <Form.Item label="Notes" name="notes" rules={[{ max: 2500, message: 'Notes cannot exceed 2,500 characters' }]}>
+            <Input.TextArea maxLength={2500} showCount />
           </Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>Borrow</Button>
         </Form>

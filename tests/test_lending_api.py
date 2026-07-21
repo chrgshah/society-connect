@@ -26,6 +26,25 @@ def test_borrow_and_return_book(authenticated_client):
 
 
 @pytest.mark.django_db
+def test_borrow_rejects_notes_over_2500_characters(authenticated_client):
+    """Verify lending notes enforce the documented maximum length."""
+    member = create_member()
+    book = create_book()
+    response = authenticated_client.post(
+        "/api/v1/lending/borrow/",
+        {
+            "member_uuid": str(member.uuid),
+            "book_uuid": str(book.uuid),
+            "notes": "x" * 2501,
+        },
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert "notes" in response.json()["errors"]
+
+
+@pytest.mark.django_db
 def test_empty_overdue_list_returns_array(authenticated_client):
     """Verify an empty overdue result uses an array response."""
     response = authenticated_client.get("/api/v1/lending/overdue/")
