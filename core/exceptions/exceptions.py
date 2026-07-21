@@ -42,3 +42,10 @@ class LendingAlreadyReturnedError(ApiError):
     def __init__(self, message: str = "Lending has already been returned."):
         """Initialize the duplicate-return error."""
         super().__init__(message, status_code=400)
+
+
+class ActiveLendingError(ApiError):
+    """Prevent deactivation of records that still participate in active loans."""
+
+    def __init__(self, message: str):
+        super().__init__(message, status_code=409)

@@ -12,7 +12,7 @@ const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [notificationApi, contextHolder] = notification.useNotification({
-    duration: 3,
+    duration: 1,
     maxCount: 4,
     placement: 'topRight',
   });

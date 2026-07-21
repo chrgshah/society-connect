@@ -50,7 +50,7 @@ export const MemberDetailPage = () => {
           <Descriptions.Item label="Membership Number">{member.membership_number}</Descriptions.Item>
         </Descriptions>
       </Card>
-      <Card title="Currently Borrowed Books" style={{ marginTop: 16 }}>
+      <Card title="Currently Borrowed Books" className="member-borrowed">
         <Table dataSource={borrowed} rowKey="uuid" columns={[{ title: 'Book', render: (record) => record.book.title }, { title: 'Due', dataIndex: 'due_at' }]} />
       </Card>
     </div>

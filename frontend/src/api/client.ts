@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_PATHS } from '../config/paths';
 
 const defaultApiBaseUrl = `${window.location.protocol}//${window.location.hostname}:8000/api/v1`;
 
@@ -16,7 +17,7 @@ let refreshRequest: Promise<void> | null = null;
 const refreshSession = async () => {
   if (!refreshRequest) {
     refreshRequest = apiClient
-      .post('/auth/refresh/', {})
+      .post(API_PATHS.refresh, {})
       .then(() => undefined)
       .finally(() => {
         refreshRequest = null;
@@ -30,8 +31,8 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const isAuthRequest =
-      originalRequest?.url?.includes('/auth/login/') ||
-      originalRequest?.url?.includes('/auth/refresh/');
+      originalRequest?.url?.includes(API_PATHS.login) ||
+      originalRequest?.url?.includes(API_PATHS.refresh);
 
     if (error.response?.status === 401 && !originalRequest?._retry && !isAuthRequest) {
       originalRequest._retry = true;

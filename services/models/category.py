@@ -9,7 +9,7 @@ class Category(BaseModel):
     """Group books under a unique category name."""
 
     name = models.CharField(max_length=200, unique=True)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, max_length=2500)
 
     class Meta:
         """Order categories by name by default."""

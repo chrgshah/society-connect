@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Avatar, Dropdown, Layout, Menu, Space, Typography } from 'antd';
-import { BookOutlined, ClockCircleOutlined, DashboardOutlined, LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, SwapOutlined, TeamOutlined } from '@ant-design/icons';
+import { BookOutlined, ClockCircleOutlined, DashboardOutlined, MoneyCollectOutlined, DownCircleOutlined, LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, SwapOutlined, TeamOutlined } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useToast } from './ToastProvider';
+import { ROUTES } from '../config/paths';
 
 const { Header, Sider, Content } = Layout;
 
@@ -16,13 +17,13 @@ export const AppLayout = () => {
 
   const items = useMemo(
     () => [
-      { key: '/', icon: <DashboardOutlined />, label: <Link to="/">Dashboard</Link> },
-      { key: '/members', icon: <TeamOutlined />, label: <Link to="/members">Members</Link> },
-      { key: '/books', icon: <BookOutlined />, label: <Link to="/books">Books</Link> },
-      { key: '/borrow', icon: <SwapOutlined />, label: <Link to="/borrow">Borrow Book</Link> },
-      { key: '/lendings', icon: <ClockCircleOutlined />, label: <Link to="/lendings">Lending Records</Link> },
-      { key: '/overdue', icon: <ClockCircleOutlined />, label: <Link to="/overdue">Overdue Books</Link> },
-      { key: '/categories', icon: <ClockCircleOutlined />, label: <Link to="/categories">Categories</Link> },
+      { key: ROUTES.dashboard, icon: <DashboardOutlined />, label: <Link to={ROUTES.dashboard}>Dashboard</Link> },
+      { key: ROUTES.members, icon: <TeamOutlined />, label: <Link to={ROUTES.members}>Members</Link> },
+      { key: ROUTES.books, icon: <BookOutlined />, label: <Link to={ROUTES.books}>Books</Link> },
+      { key: ROUTES.borrow, icon: <SwapOutlined />, label: <Link to={ROUTES.borrow}>Borrow Book</Link> },
+      { key: ROUTES.lendings, icon: <MoneyCollectOutlined />, label: <Link to={ROUTES.lendings}>Lending Records</Link> },
+      { key: ROUTES.overdue, icon: <ClockCircleOutlined />, label: <Link to={ROUTES.overdue}>Overdue Books</Link> },
+      { key: ROUTES.categories, icon: <DownCircleOutlined />, label: <Link to={ROUTES.categories}>Categories</Link> },
     ],
     [],
   );
@@ -30,33 +31,23 @@ export const AppLayout = () => {
   const onLogout = async () => {
     await logout();
     toast.success('You have been signed out.', 'Logged out');
-    navigate('/login');
+    navigate(ROUTES.login);
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout className="app-shell">
       <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme="light">
         <div
           title="Society Connect"
-          style={{
-            alignItems: 'center',
-            display: 'flex',
-            fontWeight: 700,
-            height: 64,
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            lineHeight: 1.2,
-            overflow: 'hidden',
-            padding: collapsed ? '0 8px' : '0 16px',
-            whiteSpace: collapsed ? 'nowrap' : 'normal',
-          }}
+          className={`app-brand ${collapsed ? 'app-brand-collapsed' : 'app-brand-expanded'}`}
         >
           {collapsed ? 'SC' : 'Society Connect'}
         </div>
         <Menu selectedKeys={[location.pathname]} mode="inline" items={items} />
       </Sider>
       <Layout>
-        <Header style={{ background: '#fff', padding: '0 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div onClick={() => setCollapsed(!collapsed)} style={{ cursor: 'pointer' }}>
+        <Header className="app-header">
+          <div onClick={() => setCollapsed(!collapsed)} className="app-menu-toggle">
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
           <Dropdown
@@ -70,7 +61,7 @@ export const AppLayout = () => {
             </Space>
           </Dropdown>
         </Header>
-        <Content style={{ margin: 16, background: '#fff', padding: 24 }}>
+        <Content className="app-content">
           <Outlet />
         </Content>
       </Layout>

@@ -32,7 +32,6 @@ class LoginSerializer(serializers.Serializer):
             user = User.objects.get(
                 username=attrs["username"],
                 is_active=True,
-                deleted_at__isnull=True,
             )
         except User.DoesNotExist:
             raise serializers.ValidationError("Invalid username or password.")

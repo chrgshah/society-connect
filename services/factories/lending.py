@@ -24,12 +24,8 @@ class LendingFactory:
     @transaction.atomic
     def borrow_book(member_uuid, book_uuid, due_at=None, notes=""):
         """Atomically lend an available book to an eligible member."""
-        member = Member.objects.select_for_update().get(
-            uuid=member_uuid, deleted_at__isnull=True
-        )
-        book = Book.objects.select_for_update().get(
-            uuid=book_uuid, deleted_at__isnull=True
-        )
+        member = Member.objects.select_for_update().get(uuid=member_uuid)
+        book = Book.objects.select_for_update().get(uuid=book_uuid)
         if not member.is_active:
             logger.warning(
                 "[SOCIETY_CONNECT] event=borrow_rejected reason=inactive_member "
@@ -77,9 +73,7 @@ class LendingFactory:
     @transaction.atomic
     def return_book(lending_uuid):
         """Atomically return a lending and restore book availability."""
-        lending = Lending.objects.select_for_update().get(
-            uuid=lending_uuid, deleted_at__isnull=True
-        )
+        lending = Lending.objects.select_for_update().get(uuid=lending_uuid)
         book = Book.objects.select_for_update().get(pk=lending.book_id)
         if lending.status == Lending.Status.RETURNED:
             logger.warning(
@@ -110,7 +104,7 @@ class LendingFactory:
         to_date=None,
     ):
         """Build a lending queryset from optional search and date filters."""
-        queryset = Lending.objects.filter(deleted_at__isnull=True)
+        queryset = Lending.objects.select_related("member", "book")
         if search:
             queryset = (
                 queryset.filter(notes__icontains=search)
@@ -134,16 +128,18 @@ class LendingFactory:
         """Return the member's lending records still marked as borrowed."""
         return Lending.objects.filter(
             member__uuid=member_uuid,
-            deleted_at__isnull=True,
             status=Lending.Status.BORROWED,
-        )
+        ).select_related("member", "book")
 
     @staticmethod
     def get_overdue_records():
         """Return unreturned lendings whose due date is in the past."""
         now = timezone.now()
-        return Lending.objects.filter(
-            deleted_at__isnull=True,
-            status__in=[Lending.Status.BORROWED, Lending.Status.OVERDUE],
-            due_at__lt=now,
-        ).order_by("-due_at")
+        return (
+            Lending.objects.filter(
+                status__in=[Lending.Status.BORROWED, Lending.Status.OVERDUE],
+                due_at__lt=now,
+            )
+            .select_related("member", "book")
+            .order_by("-due_at")
+        )

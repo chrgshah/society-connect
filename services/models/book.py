@@ -17,7 +17,7 @@ class Book(BaseModel):
     )
     publisher = models.CharField(max_length=255, blank=True)
     published_year = models.IntegerField(null=True, blank=True)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, max_length=2500)
     total_copies = models.PositiveIntegerField(default=1)
     available_copies = models.PositiveIntegerField(default=1)
     shelf_location = models.CharField(max_length=100, blank=True)
@@ -27,3 +27,18 @@ class Book(BaseModel):
         """Order catalog results by title by default."""
 
         ordering = ["title"]
+        indexes = [
+            models.Index(fields=["title"], name="book_title_idx"),
+            models.Index(fields=["author"], name="book_author_idx"),
+            models.Index(fields=["publisher"], name="book_publisher_idx"),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(total_copies__gt=0),
+                name="book_total_copies_positive",
+            ),
+            models.CheckConstraint(
+                check=models.Q(available_copies__lte=models.F("total_copies")),
+                name="book_available_not_above_total",
+            ),
+        ]

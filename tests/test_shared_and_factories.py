@@ -102,6 +102,12 @@ def test_book_factory_requires_and_updates_category():
 
     assert updated.category == replacement
 
+    book.total_copies = 3
+    book.available_copies = 1
+    book.save(update_fields=["total_copies", "available_copies", "updated_at"])
+    resized = BookFactory.update_book(book, {"total_copies": 4})
+    assert resized.available_copies == 2
+
 
 @pytest.mark.django_db
 def test_member_factory_filters_deactivates_and_generates_number():
@@ -128,3 +134,5 @@ def test_model_display_and_deletion_properties(staff_user):
     assert staff_user.is_deleted is False
     staff_user.soft_delete()
     assert staff_user.is_deleted is True
+    assert not User.objects.filter(pk=staff_user.pk).exists()
+    assert User.all_objects.filter(pk=staff_user.pk).exists()

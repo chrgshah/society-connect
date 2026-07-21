@@ -7,6 +7,7 @@ import { createMember, getMember, updateMember } from '../api/memberApi';
 import { PageHeader } from '../components/PageHeader';
 import { useToast } from '../components/ToastProvider';
 import { getErrorMessage } from '../utils/errors';
+import { ROUTES } from '../config/paths';
 
 interface MemberFormValues {
   first_name: string;
@@ -62,7 +63,7 @@ export const MemberFormPage = () => {
         await createMember(payload);
         toast.success('The new member was added.', 'Member added');
       }
-      navigate('/members');
+      navigate(ROUTES.members);
     } catch (err) {
       const message = getErrorMessage(err);
       setError(message);
@@ -76,7 +77,7 @@ export const MemberFormPage = () => {
     <div>
       <PageHeader title={id && id !== 'new' ? 'Edit Member' : 'Create Member'} description="Add or edit a library member" />
       <Card>
-        {error ? <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} /> : null}
+        {error ? <Alert type="error" message={error} showIcon className="app-alert" /> : null}
         <Form
           form={form}
           layout="vertical"
@@ -105,7 +106,7 @@ export const MemberFormPage = () => {
             <Input />
           </Form.Item>
           <Form.Item label="Membership Date" name="membership_date" rules={[{ required: true, message: 'Please enter Membership Date' }]}>
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker className="full-width-control" />
           </Form.Item>
           <Form.Item label="Active" name="is_active" valuePropName="checked">
             <Switch />

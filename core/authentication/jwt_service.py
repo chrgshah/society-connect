@@ -75,7 +75,7 @@ def refresh_tokens(refresh_token: str):
     refresh_jti = payload["jti"]
     if validate_session(user_id, refresh_jti) is None:
         raise jwt.InvalidTokenError("Refresh session missing or invalid.")
-    user = User.objects.get(id=user_id, is_active=True, deleted_at__isnull=True)
+    user = User.objects.get(id=user_id, is_active=True)
     delete_redis_session(user_id, refresh_jti)
     return create_tokens(user)
 

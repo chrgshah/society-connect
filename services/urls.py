@@ -19,9 +19,21 @@ from .controllers.lending import (
     OverdueListController,
     ReturnBookController,
 )
-from .controllers.book import BookDetailController, BookListController
-from .controllers.category import CategoryDetailController, CategoryListController
-from .controllers.member import MemberDetailController, MemberListController
+from .controllers.book import (
+    BookDetailController,
+    BookListController,
+    BookOptionsController,
+)
+from .controllers.category import (
+    CategoryDetailController,
+    CategoryListController,
+    CategoryOptionsController,
+)
+from .controllers.member import (
+    MemberDetailController,
+    MemberListController,
+    MemberOptionsController,
+)
 
 urlpatterns = [
     path("health/", lambda request: HttpResponse("ok")),
@@ -31,10 +43,12 @@ urlpatterns = [
     path("auth/logout/", AuthLogoutController.as_view(), name="auth-logout"),
     path("auth/me/", AuthMeController.as_view(), name="auth-me"),
     path("members/", MemberListController.as_view(), name="member-list"),
+    path("members/options/", MemberOptionsController.as_view(), name="member-options"),
     path(
         "members/<uuid:uuid>/", MemberDetailController.as_view(), name="member-detail"
     ),
     path("books/", BookListController.as_view(), name="book-list"),
+    path("books/options/", BookOptionsController.as_view(), name="book-options"),
     path("books/<uuid:uuid>/", BookDetailController.as_view(), name="book-detail"),
     path("lending/borrow/", BorrowBookController.as_view(), name="borrow-book"),
     path("lending/", LendingListController.as_view(), name="lending-list"),
@@ -58,6 +72,11 @@ urlpatterns = [
         name="dashboard-summary",
     ),
     path("categories/", CategoryListController.as_view(), name="category-list"),
+    path(
+        "categories/options/",
+        CategoryOptionsController.as_view(),
+        name="category-options",
+    ),
     path(
         "categories/<uuid:uuid>/",
         CategoryDetailController.as_view(),

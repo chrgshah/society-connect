@@ -13,6 +13,7 @@ records.
 - Restores availability automatically when a book is returned.
 - Shows current lending history and overdue records.
 - Provides dashboard totals for books, copies, members, and overdue borrowings.
+- Retains deleted domain records for audit/history while hiding them from normal queries.
 - Protects staff access with cookie-based JWT authentication and CSRF validation.
 
 The interface is intended for library staff or society administrators. Members do
@@ -61,6 +62,14 @@ docker/               Container startup scripts
 Docker installs the minimal runtime dependencies from `requirements-prod.txt`.
 Local development and quality tools are listed in `requirements.txt`.
 
+### Soft-deletion behavior
+
+Domain models inherit a shared soft-delete manager. Normal queries such as
+`Book.objects.all()` automatically exclude rows whose `deleted_at` value is set.
+Use `Book.all_objects.all()` only when deleted records must be inspected explicitly,
+such as for auditing or recovery. This behavior requires no additional migration or
+Docker configuration.
+
 ## Fastest installation: Docker
 
 This is the recommended option for non-technical users and new developers because
@@ -83,8 +92,9 @@ Wait until the backend reports that Gunicorn is listening. Then open:
 
 - Application: http://localhost:5173
 - Backend API: http://localhost:8000/api/v1/
+- API documentation: http://localhost:8000/api/docs/
+- OpenAPI schema: http://localhost:8000/api/schema/
 - Health check: http://localhost:8000/api/v1/health/
-- Django admin: http://localhost:8000/admin/
 
 Every backend startup applies migrations and loads the checked-in category fixture,
 so the book form has Fiction, Science, History, Mystery, and Biography available.

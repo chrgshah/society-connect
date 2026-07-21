@@ -27,9 +27,20 @@ class Lending(BaseModel):
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.BORROWED
     )
-    notes = models.TextField(blank=True)
+    notes = models.TextField(blank=True, max_length=2500)
 
     class Meta:
         """Show the newest borrowings first by default."""
 
         ordering = ["-borrowed_at"]
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(status="RETURNED", returned_at__isnull=False)
+                    | models.Q(
+                        status__in=["BORROWED", "OVERDUE"], returned_at__isnull=True
+                    )
+                ),
+                name="lending_return_state_consistent",
+            )
+        ]

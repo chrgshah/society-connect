@@ -2,7 +2,10 @@
 
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
+from django_filters.rest_framework import DjangoFilterBackend
 
 from core.responses.mixins import ResponseMixin
 from services.factories.lending import LendingFactory
@@ -13,6 +16,8 @@ from services.serializers.lending import (
     LendingSerializer,
     ReturnBookSerializer,
 )
+from services.shared.filters import LendingFilter
+from services.shared.pagination import StandardPagination
 
 
 class BorrowBookController(ResponseMixin, APIView):
@@ -44,39 +49,33 @@ class ReturnBookController(ResponseMixin, APIView):
 
     def post(self, request, uuid):
         """Return the book associated with the lending UUID."""
-        lending = get_object_or_404(Lending, uuid=uuid, deleted_at__isnull=True)
+        lending = get_object_or_404(Lending, uuid=uuid)
         lending = LendingFactory.return_book(lending.uuid)
         return self.success_response(
             data=LendingSerializer(lending).data, message="Book returned successfully."
         )
 
 
-class LendingListController(ResponseMixin, APIView):
+class LendingListController(ResponseMixin, GenericAPIView):
     """Search and paginate lending history."""
 
     serializer_class = LendingSerializer
+    pagination_class = StandardPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = LendingFilter
+    search_fields = ["notes", "member__first_name", "member__last_name", "book__title"]
+    ordering_fields = ["borrowed_at", "due_at", "returned_at", "status"]
+    ordering = ["-borrowed_at"]
+
+    def get_queryset(self):
+        return Lending.objects.select_related("member", "book")
 
     def get(self, request):
         """Return a filtered page of lending records."""
-        queryset = LendingFactory.get_queryset(
-            search=request.GET.get("search"),
-            status=request.GET.get("status"),
-            member_uuid=request.GET.get("member_uuid"),
-            book_uuid=request.GET.get("book_uuid"),
-            from_date=request.GET.get("from_date"),
-            to_date=request.GET.get("to_date"),
-        )
-        page = int(request.GET.get("page", 1))
-        page_size = int(request.GET.get("page_size", 20))
-        start = (page - 1) * page_size
-        end = start + page_size
-        items = list(queryset[start:end])
-        serializer = LendingSerializer(items, many=True)
-        return self.paginated_response(
-            serializer.data,
-            page,
-            page_size,
-            queryset.count(),
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        return self.paginator.get_paginated_response(
+            self.get_serializer(page, many=True).data,
             message="Lending records retrieved successfully.",
         )
 
@@ -88,7 +87,7 @@ class LendingDetailController(ResponseMixin, APIView):
 
     def get(self, request, uuid):
         """Return one non-deleted lending by UUID."""
-        lending = get_object_or_404(Lending, uuid=uuid, deleted_at__isnull=True)
+        lending = get_object_or_404(Lending, uuid=uuid)
         return self.success_response(
             data=LendingSerializer(lending).data,
             message="Lending retrieved successfully.",
@@ -102,7 +101,7 @@ class MemberBorrowedBooksController(ResponseMixin, APIView):
 
     def get(self, request, member_uuid):
         """Return active borrowings for the specified member."""
-        member = get_object_or_404(Member, uuid=member_uuid, deleted_at__isnull=True)
+        member = get_object_or_404(Member, uuid=member_uuid)
         lendings = LendingFactory.get_member_borrowed_books(member.uuid)
         return self.success_response(
             data=LendingSerializer(lendings, many=True).data,
@@ -110,14 +109,21 @@ class MemberBorrowedBooksController(ResponseMixin, APIView):
         )
 
 
-class OverdueListController(ResponseMixin, APIView):
+class OverdueListController(ResponseMixin, GenericAPIView):
     """List lending records whose due date has passed."""
 
     serializer_class = LendingSerializer
+    pagination_class = StandardPagination
 
     def get(self, request):
         """Return all borrowed or overdue records past their due date."""
         overdue = LendingFactory.get_overdue_records()
+        if "page" in request.query_params or "page_size" in request.query_params:
+            page = self.paginate_queryset(overdue)
+            return self.paginator.get_paginated_response(
+                self.get_serializer(page, many=True).data,
+                message="Overdue records retrieved successfully.",
+            )
         return self.success_response(
             data=LendingSerializer(overdue, many=True).data,
             message="Overdue records retrieved successfully.",

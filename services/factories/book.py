@@ -22,6 +22,9 @@ class BookFactory:
         category_uuid = data.pop("category_uuid", None)
         if category_uuid:
             book.category = Category.objects.get(uuid=category_uuid)
+        if "total_copies" in data and "available_copies" not in data:
+            borrowed_copies = book.total_copies - book.available_copies
+            data["available_copies"] = data["total_copies"] - borrowed_copies
         for key, value in data.items():
             setattr(book, key, value)
         book.save()
@@ -39,7 +42,7 @@ class BookFactory:
         search=None, author=None, category_uuid=None, is_available=None, is_active=None
     ):
         """Build a book queryset from optional catalog filters."""
-        queryset = Book.objects.filter(deleted_at__isnull=True)
+        queryset = Book.objects.select_related("category")
         if search:
             queryset = queryset.filter(title__icontains=search) | queryset.filter(
                 isbn__icontains=search

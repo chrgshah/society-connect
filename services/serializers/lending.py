@@ -4,6 +4,8 @@ from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
 
 from services.models.lending import Lending
+from services.models.book import Book
+from services.models.member import Member
 
 
 class BorrowBookSerializer(serializers.Serializer):
@@ -12,7 +14,23 @@ class BorrowBookSerializer(serializers.Serializer):
     member_uuid = serializers.UUIDField()
     book_uuid = serializers.UUIDField()
     due_at = serializers.DateTimeField(required=False, allow_null=True)
-    notes = serializers.CharField(required=False, allow_blank=True, default="")
+    notes = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        default="",
+        max_length=2500,
+        trim_whitespace=True,
+    )
+
+    def validate_member_uuid(self, value):
+        if not Member.objects.filter(uuid=value).exists():
+            raise serializers.ValidationError("Member not found.")
+        return value
+
+    def validate_book_uuid(self, value):
+        if not Book.objects.filter(uuid=value).exists():
+            raise serializers.ValidationError("Book not found.")
+        return value
 
 
 class ReturnBookSerializer(serializers.Serializer):

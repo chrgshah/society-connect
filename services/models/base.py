@@ -4,6 +4,14 @@ from django.db import models
 from django.utils import timezone
 
 
+class SoftDeleteManager(models.Manager):
+    """Return only records that have not been soft-deleted."""
+
+    def get_queryset(self):
+        """Apply the active-record constraint to every query."""
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
 class BaseModel(models.Model):
     """Provide UUIDs, timestamps, and soft deletion to domain models."""
 
@@ -12,6 +20,9 @@ class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         """Prevent Django from creating a table for this base class."""

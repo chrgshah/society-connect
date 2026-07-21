@@ -21,6 +21,11 @@ class Member(BaseModel):
         """Show recently created members first by default."""
 
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["first_name"], name="member_first_name_idx"),
+            models.Index(fields=["last_name"], name="member_last_name_idx"),
+            models.Index(fields=["phone"], name="member_phone_idx"),
+        ]
 
     @property
     def full_name(self):
