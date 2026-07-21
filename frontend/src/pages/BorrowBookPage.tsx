@@ -2,13 +2,14 @@ import { Alert, Button, Card, DatePicker, Form, Input, Select, Spin } from 'antd
 import type { Dayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
 import { borrowBook } from '../api/lendingApi';
-import { getMembers } from '../api/memberApi';
-import { getBooks } from '../api/bookApi';
+import { getMemberOptions } from '../api/memberApi';
+import { getBookOptions } from '../api/bookApi';
 import { PageHeader } from '../components/PageHeader';
 import { useToast } from '../components/ToastProvider';
 import { getErrorMessage } from '../utils/errors';
 import type { Member } from '../types/member';
 import type { Book } from '../types/book';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 interface BorrowBookFormValues {
   member_uuid: string;
@@ -23,26 +24,18 @@ export const BorrowBookPage = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
   const [memberSearch, setMemberSearch] = useState('');
+  const [bookSearch, setBookSearch] = useState('');
   const [membersLoading, setMembersLoading] = useState(false);
+  const [booksLoading, setBooksLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const loadBooks = async () => {
-      try {
-        const booksResponse = await getBooks({ is_available: true, page: 1, page_size: 50 });
-        setBooks(booksResponse.data.data.results);
-      } catch (loadError) {
-        setBooks([]);
-        setError(getErrorMessage(loadError));
-      }
-    };
-    void loadBooks();
-  }, []);
+  const debouncedMemberSearch = useDebouncedValue(memberSearch);
+  const debouncedBookSearch = useDebouncedValue(bookSearch);
 
   useEffect(() => {
-    const search = memberSearch.trim();
+    const search = debouncedMemberSearch.trim();
     if (!search) {
       setMembers([]);
       setMembersLoading(false);
@@ -50,17 +43,12 @@ export const BorrowBookPage = () => {
     }
 
     let cancelled = false;
-    const timer = window.setTimeout(async () => {
+    const load = async () => {
       setMembersLoading(true);
       try {
-        const response = await getMembers({
-          search,
-          is_active: true,
-          page: 1,
-          page_size: 20,
-        });
+        const response = await getMemberOptions(search);
         if (!cancelled) {
-          setMembers(response.data.data.results);
+          setMembers(response.data.data);
         }
       } catch (err) {
         if (!cancelled) {
@@ -72,13 +60,39 @@ export const BorrowBookPage = () => {
           setMembersLoading(false);
         }
       }
-    }, 400);
+    };
+    void load();
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timer);
     };
-  }, [memberSearch]);
+  }, [debouncedMemberSearch]);
+
+  useEffect(() => {
+    const search = debouncedBookSearch.trim();
+    if (!search) {
+      setBooks([]);
+      setBooksLoading(false);
+      return;
+    }
+    let cancelled = false;
+    const load = async () => {
+      setBooksLoading(true);
+      try {
+        const response = await getBookOptions(search);
+        if (!cancelled) setBooks(response.data.data);
+      } catch (loadError) {
+        if (!cancelled) {
+          setBooks([]);
+          setError(getErrorMessage(loadError));
+        }
+      } finally {
+        if (!cancelled) setBooksLoading(false);
+      }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [debouncedBookSearch]);
 
   const onFinish = async (values: BorrowBookFormValues) => {
     setLoading(true);
@@ -124,7 +138,14 @@ export const BorrowBookPage = () => {
             />
           </Form.Item>
           <Form.Item label="Book" name="book_uuid" rules={[{ required: true, message: 'Please select a Book' }]}>
-            <Select showSearch optionFilterProp="label" placeholder="Select a book" options={books.map((book) => ({ label: book.title, value: book.uuid }))} />
+            <Select
+              showSearch
+              filterOption={false}
+              onSearch={setBookSearch}
+              placeholder="Type a book title, ISBN, or author"
+              notFoundContent={booksLoading ? <Spin size="small" /> : bookSearch.trim() ? 'No books found' : 'Start typing to search'}
+              options={books.map((book) => ({ label: `${book.title} (${book.author})`, value: book.uuid }))}
+            />
           </Form.Item>
           <Form.Item label="Due Date" name="due_at">
             <DatePicker showTime style={{ width: '100%' }} />

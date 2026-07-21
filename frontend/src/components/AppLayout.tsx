@@ -4,6 +4,7 @@ import { BookOutlined, ClockCircleOutlined, DashboardOutlined, LogoutOutlined, M
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { useToast } from './ToastProvider';
+import { ROUTES } from '../config/paths';
 
 const { Header, Sider, Content } = Layout;
 
@@ -16,13 +17,13 @@ export const AppLayout = () => {
 
   const items = useMemo(
     () => [
-      { key: '/', icon: <DashboardOutlined />, label: <Link to="/">Dashboard</Link> },
-      { key: '/members', icon: <TeamOutlined />, label: <Link to="/members">Members</Link> },
-      { key: '/books', icon: <BookOutlined />, label: <Link to="/books">Books</Link> },
-      { key: '/borrow', icon: <SwapOutlined />, label: <Link to="/borrow">Borrow Book</Link> },
-      { key: '/lendings', icon: <ClockCircleOutlined />, label: <Link to="/lendings">Lending Records</Link> },
-      { key: '/overdue', icon: <ClockCircleOutlined />, label: <Link to="/overdue">Overdue Books</Link> },
-      { key: '/categories', icon: <ClockCircleOutlined />, label: <Link to="/categories">Categories</Link> },
+      { key: ROUTES.dashboard, icon: <DashboardOutlined />, label: <Link to={ROUTES.dashboard}>Dashboard</Link> },
+      { key: ROUTES.members, icon: <TeamOutlined />, label: <Link to={ROUTES.members}>Members</Link> },
+      { key: ROUTES.books, icon: <BookOutlined />, label: <Link to={ROUTES.books}>Books</Link> },
+      { key: ROUTES.borrow, icon: <SwapOutlined />, label: <Link to={ROUTES.borrow}>Borrow Book</Link> },
+      { key: ROUTES.lendings, icon: <ClockCircleOutlined />, label: <Link to={ROUTES.lendings}>Lending Records</Link> },
+      { key: ROUTES.overdue, icon: <ClockCircleOutlined />, label: <Link to={ROUTES.overdue}>Overdue Books</Link> },
+      { key: ROUTES.categories, icon: <ClockCircleOutlined />, label: <Link to={ROUTES.categories}>Categories</Link> },
     ],
     [],
   );
@@ -30,7 +31,7 @@ export const AppLayout = () => {
   const onLogout = async () => {
     await logout();
     toast.success('You have been signed out.', 'Logged out');
-    navigate('/login');
+    navigate(ROUTES.login);
   };
 
   return (

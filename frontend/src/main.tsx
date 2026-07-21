@@ -6,17 +6,19 @@ import 'antd/dist/reset.css';
 import { AuthProvider } from './auth/AuthContext';
 import { AppRoutes } from './routes/AppRoutes';
 import { ToastProvider } from './components/ToastProvider';
+import { AppErrorBoundary } from './components/AppErrorBoundary';
+import './styles/app.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ConfigProvider theme={{ token: { borderRadius: 6 } }}>
-      <ToastProvider>
+      <AppErrorBoundary><ToastProvider>
         <BrowserRouter>
           <AuthProvider>
             <AppRoutes />
           </AuthProvider>
         </BrowserRouter>
-      </ToastProvider>
+      </ToastProvider></AppErrorBoundary>
     </ConfigProvider>
   </React.StrictMode>,
 );

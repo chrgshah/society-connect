@@ -7,6 +7,7 @@ import { createMember, getMember, updateMember } from '../api/memberApi';
 import { PageHeader } from '../components/PageHeader';
 import { useToast } from '../components/ToastProvider';
 import { getErrorMessage } from '../utils/errors';
+import { ROUTES } from '../config/paths';
 
 interface MemberFormValues {
   first_name: string;
@@ -62,7 +63,7 @@ export const MemberFormPage = () => {
         await createMember(payload);
         toast.success('The new member was added.', 'Member added');
       }
-      navigate('/members');
+      navigate(ROUTES.members);
     } catch (err) {
       const message = getErrorMessage(err);
       setError(message);

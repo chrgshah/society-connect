@@ -2,6 +2,7 @@ import { Alert, Button, Card, Form, Input, Typography } from 'antd';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { ROUTES } from '../config/paths';
 import { useToast } from '../components/ToastProvider';
 import { getErrorMessage } from '../utils/errors';
 
@@ -18,7 +19,7 @@ export const LoginPage = () => {
     try {
       await login(values.username, values.password);
       toast.success('You are now signed in.', 'Access authorized');
-      navigate('/');
+      navigate(ROUTES.dashboard);
     } catch (err) {
       const message = getErrorMessage(err);
       setError(message);

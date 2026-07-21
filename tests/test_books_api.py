@@ -102,3 +102,34 @@ def test_put_book_uses_update_behavior(authenticated_client):
     )
     assert response.status_code == 200
     assert response.json()["data"]["title"] == "Put title"
+
+
+@pytest.mark.django_db
+def test_book_options_are_unpaginated_and_searchable(authenticated_client):
+    """Verify dropdown book lookups return a plain filtered array."""
+    book = create_book(title="Dropdown Django", is_active=True, available_copies=1)
+
+    response = authenticated_client.get("/api/v1/books/options/?search=Dropdown")
+
+    assert response.status_code == 200
+    assert isinstance(response.json()["data"], list)
+    assert response.json()["data"][0]["uuid"] == str(book.uuid)
+
+
+@pytest.mark.django_db
+def test_book_with_active_lending_cannot_be_deactivated(authenticated_client):
+    """Protect inventory history while a copy remains borrowed."""
+    from tests.helpers import create_member
+
+    book = create_book()
+    member = create_member()
+    authenticated_client.post(
+        "/api/v1/lending/borrow/",
+        {"member_uuid": str(member.uuid), "book_uuid": str(book.uuid)},
+        format="json",
+    )
+
+    response = authenticated_client.delete(f"/api/v1/books/{book.uuid}/")
+
+    assert response.status_code == 409
+    assert "active lendings" in response.json()["message"]

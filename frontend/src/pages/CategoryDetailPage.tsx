@@ -5,6 +5,7 @@ import { getCategoryById } from '../api/categoryApi';
 import { PageHeader } from '../components/PageHeader';
 import { getErrorMessage } from '../utils/errors';
 import type { Category } from '../types/category';
+import { ROUTES } from '../config/paths';
 
 export const CategoryDetailPage = () => {
   const { id } = useParams();
@@ -30,7 +31,7 @@ export const CategoryDetailPage = () => {
 
   return (
     <div>
-      <PageHeader title="Category Details" description="View category details" extra={<Button type="primary" onClick={() => navigate(`/categories/${category.uuid}/edit`)}>Edit</Button>} />
+      <PageHeader title="Category Details" description="View category details" extra={<Button type="primary" onClick={() => navigate(ROUTES.categoryEdit(category.uuid))}>Edit</Button>} />
       <Card>
         <Descriptions column={1} bordered>
           <Descriptions.Item label="Name">{category.name}</Descriptions.Item>

@@ -62,3 +62,30 @@ def test_category_crud(authenticated_client):
     missing = authenticated_client.get(f"/api/v1/categories/{category_uuid}/")
     assert deleted.status_code == 200
     assert missing.status_code == 404
+
+
+@pytest.mark.django_db
+def test_category_options_are_unpaginated(authenticated_client):
+    """Verify category dropdown lookups return a plain searchable array."""
+    category = create_category(name="Dropdown Category")
+
+    response = authenticated_client.get("/api/v1/categories/options/?search=Dropdown")
+
+    assert response.status_code == 200
+    assert isinstance(response.json()["data"], list)
+    assert response.json()["data"][0]["uuid"] == str(category.uuid)
+
+
+@pytest.mark.django_db
+def test_put_category_uses_update_behavior(authenticated_client):
+    """Verify PUT delegates to the category partial-update implementation."""
+    category = create_category()
+
+    response = authenticated_client.put(
+        f"/api/v1/categories/{category.uuid}/",
+        {"description": "Updated through PUT"},
+        format="json",
+    )
+
+    assert response.status_code == 200
+    assert response.json()["data"]["description"] == "Updated through PUT"

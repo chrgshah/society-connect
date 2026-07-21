@@ -35,6 +35,16 @@ def test_empty_overdue_list_returns_array(authenticated_client):
 
 
 @pytest.mark.django_db
+def test_overdue_list_supports_framework_pagination(authenticated_client):
+    """Verify paginated callers receive the standard pagination envelope."""
+    response = authenticated_client.get("/api/v1/lending/overdue/?page=1&page_size=10")
+
+    assert response.status_code == 200
+    assert response.json()["data"]["results"] == []
+    assert response.json()["data"]["pagination"]["page"] == 1
+
+
+@pytest.mark.django_db
 def test_borrow_rejects_inactive_member(authenticated_client):
     """Verify inactive members cannot borrow books."""
     member = create_member(is_active=False)

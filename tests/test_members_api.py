@@ -86,3 +86,37 @@ def test_put_member_uses_update_behavior(authenticated_client):
     )
     assert response.status_code == 200
     assert response.json()["data"]["last_name"] == "Updated"
+
+
+@pytest.mark.django_db
+def test_member_options_are_unpaginated_and_only_active(authenticated_client):
+    """Verify remote member dropdowns receive a plain active-member array."""
+    active = create_member(first_name="Dropdown", is_active=True)
+    create_member(
+        email="inactive@example.com", membership_number="MEM-INACTIVE", is_active=False
+    )
+
+    response = authenticated_client.get("/api/v1/members/options/?search=Dropdown")
+
+    assert response.status_code == 200
+    assert isinstance(response.json()["data"], list)
+    assert response.json()["data"][0]["uuid"] == str(active.uuid)
+
+
+@pytest.mark.django_db
+def test_member_with_active_lending_cannot_be_deactivated(authenticated_client):
+    """Protect lending history while a member still holds a book."""
+    from tests.helpers import create_book
+
+    member = create_member()
+    book = create_book()
+    authenticated_client.post(
+        "/api/v1/lending/borrow/",
+        {"member_uuid": str(member.uuid), "book_uuid": str(book.uuid)},
+        format="json",
+    )
+
+    response = authenticated_client.delete(f"/api/v1/members/{member.uuid}/")
+
+    assert response.status_code == 409
+    assert "active lendings" in response.json()["message"]

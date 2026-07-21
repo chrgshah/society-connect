@@ -5,6 +5,7 @@ import { createCategory, getCategoryById, updateCategory } from '../api/category
 import { PageHeader } from '../components/PageHeader';
 import { useToast } from '../components/ToastProvider';
 import { getErrorMessage } from '../utils/errors';
+import { ROUTES } from '../config/paths';
 
 interface CategoryFormValues {
   name: string;
@@ -45,7 +46,7 @@ export const CategoryFormPage = () => {
         await createCategory(payload);
         toast.success('The category was added.', 'Category added');
       }
-      navigate('/categories');
+      navigate(ROUTES.categories);
     } catch (submitError) {
       const message = getErrorMessage(submitError);
       setError(message);

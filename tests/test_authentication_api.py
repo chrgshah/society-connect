@@ -62,6 +62,23 @@ def test_authenticated_profile_and_logout(api_client, staff_user):
 
 
 @pytest.mark.django_db
+def test_logout_tolerates_invalid_refresh_cookie(api_client, staff_user):
+    """Verify logout still succeeds when refresh-cookie cleanup cannot decode JWT."""
+    api_client.post(
+        "/api/v1/auth/login/",
+        {"username": "admin", "password": "Admin@12345"},
+        format="json",
+    )
+    csrf_token = api_client.cookies["csrftoken"].value
+    api_client.credentials(HTTP_X_CSRFTOKEN=csrf_token)
+    api_client.cookies["nls_refresh"] = "invalid-token"
+
+    response = api_client.post("/api/v1/auth/logout/", {}, format="json")
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
 def test_csrf_endpoint_sets_cookie(api_client):
     """Verify clients can initialize CSRF protection before logging in."""
     response = api_client.get("/api/v1/auth/csrf/")

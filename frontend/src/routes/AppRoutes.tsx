@@ -16,31 +16,32 @@ import { OverdueListPage } from '../pages/OverdueListPage';
 import { CategoryListPage } from '../pages/CategoryListPage';
 import { CategoryDetailPage } from '../pages/CategoryDetailPage';
 import { CategoryFormPage } from '../pages/CategoryFormPage';
+import { ROUTES } from '../config/paths';
 
 export const AppRoutes = () => (
   <Routes>
-    <Route path="/login" element={<LoginPage />} />
+    <Route path={ROUTES.login} element={<LoginPage />} />
     <Route element={<ProtectedRoute />}>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/members" element={<MemberListPage />} />
-        <Route path="/members/new" element={<MemberFormPage />} />
-        <Route path="/members/:id" element={<MemberDetailPage />} />
-        <Route path="/members/:id/edit" element={<MemberFormPage />} />
-        <Route path="/books" element={<BookListPage />} />
-        <Route path="/books/new" element={<BookFormPage />} />
-        <Route path="/books/:id" element={<BookDetailPage />} />
-        <Route path="/books/:id/edit" element={<BookFormPage />} />
-        <Route path="/borrow" element={<BorrowBookPage />} />
-        <Route path="/lendings" element={<LendingListPage />} />
-        <Route path="/overdue" element={<OverdueListPage />} />
-        <Route path="/categories" element={<CategoryListPage />} />
-        <Route path="/categories/new" element={<CategoryFormPage />} />
-        <Route path="/categories/:id" element={<CategoryDetailPage />} />
-        <Route path="/categories/:id/edit" element={<CategoryFormPage />} />
+        <Route path={ROUTES.dashboard} element={<DashboardPage />} />
+        <Route path={ROUTES.members} element={<MemberListPage />} />
+        <Route path={ROUTES.memberNew} element={<MemberFormPage />} />
+        <Route path={ROUTES.memberDetailPattern} element={<MemberDetailPage />} />
+        <Route path={ROUTES.memberEditPattern} element={<MemberFormPage />} />
+        <Route path={ROUTES.books} element={<BookListPage />} />
+        <Route path={ROUTES.bookNew} element={<BookFormPage />} />
+        <Route path={ROUTES.bookDetailPattern} element={<BookDetailPage />} />
+        <Route path={ROUTES.bookEditPattern} element={<BookFormPage />} />
+        <Route path={ROUTES.borrow} element={<BorrowBookPage />} />
+        <Route path={ROUTES.lendings} element={<LendingListPage />} />
+        <Route path={ROUTES.overdue} element={<OverdueListPage />} />
+        <Route path={ROUTES.categories} element={<CategoryListPage />} />
+        <Route path={ROUTES.categoryNew} element={<CategoryFormPage />} />
+        <Route path={ROUTES.categoryDetailPattern} element={<CategoryDetailPage />} />
+        <Route path={ROUTES.categoryEditPattern} element={<CategoryFormPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Route>
-    <Route path="*" element={<Navigate to="/login" replace />} />
+    <Route path="*" element={<Navigate to={ROUTES.login} replace />} />
   </Routes>
 );

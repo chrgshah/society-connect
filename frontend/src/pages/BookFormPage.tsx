@@ -1,11 +1,13 @@
 import { Alert, Button, Card, Form, Input, InputNumber, Select, Switch } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createBook, getBook, getCategories, updateBook } from '../api/bookApi';
+import { createBook, getBook, getCategoryOptions, updateBook } from '../api/bookApi';
 import { PageHeader } from '../components/PageHeader';
 import { useToast } from '../components/ToastProvider';
 import { getErrorMessage } from '../utils/errors';
 import type { Category } from '../types/book';
+import { ROUTES } from '../config/paths';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 interface BookFormValues {
   isbn: string;
@@ -30,17 +32,16 @@ export const BookFormPage = () => {
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categorySearch, setCategorySearch] = useState('');
+  const debouncedCategorySearch = useDebouncedValue(categorySearch);
 
   useEffect(() => {
     const load = async () => {
-      setCategoriesLoading(true);
       try {
-        const categoriesResponse = await getCategories();
-        setCategories(categoriesResponse.data.data.results);
-
         if (id && id !== 'new') {
           const response = await getBook(id);
           const book = response.data.data;
+          if (book.category) setCategories([book.category]);
           form.setFieldsValue({
             ...book,
             category_uuid: book.category?.uuid,
@@ -48,12 +49,27 @@ export const BookFormPage = () => {
         }
       } catch (err) {
         setError(getErrorMessage(err));
-      } finally {
-        setCategoriesLoading(false);
       }
     };
     void load();
   }, [id, form]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCategories = async () => {
+      setCategoriesLoading(true);
+      try {
+        const response = await getCategoryOptions(debouncedCategorySearch.trim());
+        if (!cancelled) setCategories(response.data.data);
+      } catch (err) {
+        if (!cancelled) setError(getErrorMessage(err));
+      } finally {
+        if (!cancelled) setCategoriesLoading(false);
+      }
+    };
+    void loadCategories();
+    return () => { cancelled = true; };
+  }, [debouncedCategorySearch]);
 
   const onFinish = async (values: BookFormValues) => {
     setLoading(true);
@@ -76,7 +92,7 @@ export const BookFormPage = () => {
         await createBook(payload);
         toast.success('The new book was added to the library.', 'Book added');
       }
-      navigate('/books');
+      navigate(ROUTES.books);
     } catch (err) {
       const message = getErrorMessage(err);
       setError(message);
@@ -114,7 +130,9 @@ export const BookFormPage = () => {
               loading={categoriesLoading}
               placeholder="Select a category"
               showSearch
-              optionFilterProp="label"
+              filterOption={false}
+              onSearch={setCategorySearch}
+              notFoundContent={categoriesLoading ? 'Loading categories...' : 'No categories found'}
               options={categories.map((category) => ({
                 label: category.name,
                 value: category.uuid,

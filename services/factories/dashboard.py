@@ -1,5 +1,7 @@
 """Aggregate queries used by the management dashboard."""
 
+from django.db.models import Count, Q, Sum
+
 from services.models.book import Book
 from services.models.lending import Lending
 from services.models.member import Member
@@ -11,19 +13,21 @@ class DashboardFactory:
     @staticmethod
     def get_summary():
         """Return current catalog, member, availability, and overdue counts."""
-        total_books = Book.objects.filter(deleted_at__isnull=True).count()
-        total_copies = sum(
-            book.total_copies for book in Book.objects.filter(deleted_at__isnull=True)
+        book_totals = Book.objects.filter(deleted_at__isnull=True).aggregate(
+            total_books=Count("id"),
+            total_copies=Sum("total_copies", default=0),
+            available_copies=Sum("available_copies", default=0),
         )
-        available_copies = sum(
-            book.available_copies
-            for book in Book.objects.filter(deleted_at__isnull=True)
-        )
+        total_books = book_totals["total_books"]
+        total_copies = book_totals["total_copies"]
+        available_copies = book_totals["available_copies"]
         borrowed_copies = total_copies - available_copies
-        total_members = Member.objects.filter(deleted_at__isnull=True).count()
-        active_members = Member.objects.filter(
-            deleted_at__isnull=True, is_active=True
-        ).count()
+        member_totals = Member.objects.filter(deleted_at__isnull=True).aggregate(
+            total_members=Count("id"),
+            active_members=Count("id", filter=Q(is_active=True)),
+        )
+        total_members = member_totals["total_members"]
+        active_members = member_totals["active_members"]
         overdue_borrowings = Lending.objects.filter(
             deleted_at__isnull=True, status=Lending.Status.OVERDUE
         ).count()

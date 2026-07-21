@@ -2,53 +2,41 @@
 
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
+from django_filters.rest_framework import DjangoFilterBackend
 
+from core.exceptions.exceptions import ActiveLendingError
 from core.responses.mixins import ResponseMixin
 from services.factories.book import BookFactory
 from services.models.book import Book
-from services.models.category import Category
-from services.serializers.book import BookCategorySerializer, BookSerializer
+from services.serializers.book import BookSerializer
 from services.shared.logger import logger
+from services.shared.filters import BookFilter
+from services.shared.pagination import StandardPagination
 
 
-class CategoryListController(ResponseMixin, APIView):
-    """List active book categories."""
-
-    def get(self, request):
-        """Return categories ordered by display name."""
-        categories = Category.objects.filter(deleted_at__isnull=True).order_by("name")
-        return self.success_response(
-            data=BookCategorySerializer(categories, many=True).data,
-            message="Categories retrieved successfully.",
-        )
-
-
-class BookListController(ResponseMixin, APIView):
+class BookListController(ResponseMixin, GenericAPIView):
     """Search, paginate, and create books."""
 
     serializer_class = BookSerializer
+    pagination_class = StandardPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = BookFilter
+    search_fields = ["title", "isbn", "author", "publisher"]
+    ordering_fields = ["title", "author", "created_at", "available_copies"]
+    ordering = ["title"]
+
+    def get_queryset(self):
+        return Book.objects.filter(deleted_at__isnull=True).select_related("category")
 
     def get(self, request):
         """Return a filtered page of non-deleted books."""
-        queryset = BookFactory.get_queryset(
-            search=request.GET.get("search"),
-            author=request.GET.get("author"),
-            category_uuid=request.GET.get("category_uuid"),
-            is_available=request.GET.get("is_available"),
-            is_active=request.GET.get("is_active"),
-        )
-        page = int(request.GET.get("page", 1))
-        page_size = int(request.GET.get("page_size", 20))
-        start = (page - 1) * page_size
-        end = start + page_size
-        items = list(queryset[start:end])
-        serializer = BookSerializer(items, many=True)
-        return self.paginated_response(
-            serializer.data,
-            page,
-            page_size,
-            queryset.count(),
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        return self.paginator.get_paginated_response(
+            self.get_serializer(page, many=True).data,
             message="Books retrieved successfully.",
         )
 
@@ -66,6 +54,32 @@ class BookListController(ResponseMixin, APIView):
             data=BookSerializer(book).data,
             message="Book created successfully.",
             status_code=status.HTTP_201_CREATED,
+        )
+
+
+class BookOptionsController(ResponseMixin, GenericAPIView):
+    """Return a compact, unpaginated book collection for remote dropdowns."""
+
+    serializer_class = BookSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ["title", "isbn", "author"]
+
+    def get_queryset(self):
+        return (
+            Book.objects.filter(
+                deleted_at__isnull=True,
+                is_active=True,
+                available_copies__gt=0,
+            )
+            .select_related("category")
+            .order_by("title")
+        )
+
+    def get(self, request):
+        books = self.filter_queryset(self.get_queryset())[:50]
+        return self.success_response(
+            data=self.get_serializer(books, many=True).data,
+            message="Book options retrieved successfully.",
         )
 
 
@@ -103,6 +117,12 @@ class BookDetailController(ResponseMixin, APIView):
     def delete(self, request, uuid):
         """Soft-delete a book while retaining its historical data."""
         book = get_object_or_404(Book, uuid=uuid, deleted_at__isnull=True)
+        if book.lendings.filter(
+            deleted_at__isnull=True, status__in=["BORROWED", "OVERDUE"]
+        ).exists():
+            raise ActiveLendingError(
+                "A book with active lendings cannot be deactivated."
+            )
         book.soft_delete()
         logger.info(
             "[SOCIETY_CONNECT] event=book_deactivated book_uuid=%s user_id=%s",

@@ -11,7 +11,9 @@ from services.factories.lending import LendingFactory
 from services.models.lending import Lending
 from services.serializers.book import BookSerializer
 from services.serializers.member import MemberSerializer
+from services.serializers.lending import BorrowBookSerializer
 from services.serializers.authentication import LoginSerializer
+from services.shared.filters import BookFilter
 from tests.helpers import create_book, create_member
 
 
@@ -62,6 +64,63 @@ def test_book_serializer_rejects_negative_available_without_instance():
     )
     assert not serializer.is_valid()
     assert "available_copies" in serializer.errors
+
+
+@pytest.mark.django_db
+def test_book_serializer_rejects_invalid_year_and_borrowed_copy_reduction():
+    """Verify publication years and reductions below borrowed stock are rejected."""
+    book = create_book(total_copies=3, available_copies=1)
+    invalid_year = BookSerializer(book, data={"published_year": 999}, partial=True)
+    invalid_total = BookSerializer(book, data={"total_copies": 1}, partial=True)
+
+    assert not invalid_year.is_valid()
+    assert "published_year" in invalid_year.errors
+    assert not invalid_total.is_valid()
+    assert "total_copies" in invalid_total.errors
+
+
+@pytest.mark.django_db
+def test_borrow_serializer_rejects_unknown_relationships():
+    """Turn missing member and book identifiers into field validation errors."""
+    serializer = BorrowBookSerializer(
+        data={"member_uuid": uuid4(), "book_uuid": uuid4()}
+    )
+
+    assert not serializer.is_valid()
+    assert set(serializer.errors) == {"member_uuid", "book_uuid"}
+
+
+def test_member_serializer_rejects_overlong_phone_number():
+    """Reject phone values beyond the international 15-digit limit."""
+    with pytest.raises(serializers.ValidationError):
+        MemberSerializer().validate_phone("+1234567890123456")
+
+
+@pytest.mark.django_db
+def test_book_availability_filter_handles_unspecified_value():
+    """Leave a queryset unchanged when availability was not supplied."""
+    queryset = create_book().__class__.objects.all()
+    filtered = BookFilter().filter_availability(queryset, "is_available", None)
+
+    assert filtered is queryset
+
+
+@pytest.mark.django_db
+def test_book_availability_filter_handles_both_boolean_values():
+    """Apply available and unavailable dropdown/list filters."""
+    available = create_book(isbn="9780000000018", available_copies=1)
+    unavailable = create_book(
+        isbn="9780000000025", category=available.category, available_copies=0
+    )
+    queryset = available.__class__.objects.all()
+    book_filter = BookFilter()
+
+    assert list(book_filter.filter_availability(queryset, "is_available", True)) == [
+        available
+    ]
+    assert list(book_filter.filter_availability(queryset, "is_available", False)) == [
+        unavailable
+    ]
 
 
 @pytest.mark.django_db

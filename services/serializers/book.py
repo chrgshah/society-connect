@@ -20,7 +20,7 @@ class BookCategorySerializer(serializers.ModelSerializer):
 class BookSerializer(serializers.ModelSerializer):
     """Serialize books and validate category and copy constraints."""
 
-    category_uuid = serializers.UUIDField(write_only=True, required=False)
+    category_uuid = serializers.UUIDField(write_only=True, required=True)
     category = BookCategorySerializer(read_only=True)
 
     class Meta:
@@ -48,19 +48,6 @@ class BookSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Validate category existence and consistent copy counts."""
-        category_uuid = attrs.get("category_uuid")
-        if self.instance is None and not category_uuid:
-            raise serializers.ValidationError(
-                {"category_uuid": "Category is required."}
-            )
-        if (
-            category_uuid
-            and not Category.objects.filter(
-                uuid=category_uuid, deleted_at__isnull=True
-            ).exists()
-        ):
-            raise serializers.ValidationError({"category_uuid": "Category not found."})
-
         available_copies = attrs.get(
             "available_copies", getattr(self.instance, "available_copies", None)
         )
@@ -79,4 +66,38 @@ class BookSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"total_copies": "Total copies must be greater than zero."}
             )
+        if self.instance and "total_copies" in attrs:
+            borrowed_copies = (
+                self.instance.total_copies - self.instance.available_copies
+            )
+            if total_copies < borrowed_copies:
+                raise serializers.ValidationError(
+                    {
+                        "total_copies": "Total copies cannot be less than currently borrowed copies."
+                    }
+                )
         return attrs
+
+    def validate_category_uuid(self, value):
+        if not Category.objects.filter(uuid=value, deleted_at__isnull=True).exists():
+            raise serializers.ValidationError("Category not found.")
+        return value
+
+    def validate_published_year(self, value):
+        from django.utils import timezone
+
+        if value is not None and not 1000 <= value <= timezone.now().year:
+            raise serializers.ValidationError("Enter a valid publication year.")
+        return value
+
+    def validate_isbn(self, value):
+        normalized = value.replace("-", "").replace(" ", "").upper()
+        valid_13 = normalized.isdigit() and len(normalized) == 13
+        valid_10 = (
+            len(normalized) == 10
+            and normalized[:-1].isdigit()
+            and normalized[-1] in "0123456789X"
+        )
+        if not (valid_10 or valid_13):
+            raise serializers.ValidationError("Enter a valid ISBN-10 or ISBN-13.")
+        return normalized
