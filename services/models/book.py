@@ -27,3 +27,13 @@ class Book(BaseModel):
         """Order catalog results by title by default."""
 
         ordering = ["title"]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(total_copies__gt=0),
+                name="book_total_copies_positive",
+            ),
+            models.CheckConstraint(
+                check=models.Q(available_copies__lte=models.F("total_copies")),
+                name="book_available_not_above_total",
+            ),
+        ]

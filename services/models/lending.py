@@ -33,3 +33,14 @@ class Lending(BaseModel):
         """Show the newest borrowings first by default."""
 
         ordering = ["-borrowed_at"]
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(status="RETURNED", returned_at__isnull=False)
+                    | models.Q(
+                        status__in=["BORROWED", "OVERDUE"], returned_at__isnull=True
+                    )
+                ),
+                name="lending_return_state_consistent",
+            )
+        ]
