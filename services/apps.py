@@ -8,3 +8,7 @@ class ServicesConfig(AppConfig):
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "services"
+
+    def ready(self):
+        """Load OpenAPI extensions when Django initializes the application."""
+        from services import schema  # noqa: F401

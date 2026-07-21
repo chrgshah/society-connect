@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
+    "drf_spectacular",
     "django_filters",
     "core",
     "services",
@@ -71,6 +72,26 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_PAGINATION_CLASS": "services.shared.pagination.StandardPagination",
     "PAGE_SIZE": 20,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Society Connect API",
+    "DESCRIPTION": (
+        "Developer API documentation. Start with GET /api/v1/auth/csrf/, then "
+        "POST /api/v1/auth/login/. The browser stores the HTTP-only JWT cookies "
+        "and Swagger sends them automatically with later requests."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "displayRequestDuration": True,
+        "filter": True,
+        "persistAuthorization": True,
+        "tagsSorter": "alpha",
+        "operationsSorter": "alpha",
+    },
 }
 
 LOGGING = {

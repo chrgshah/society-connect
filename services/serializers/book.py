@@ -6,7 +6,7 @@ from services.models.book import Book
 from services.models.category import Category
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class BookCategorySerializer(serializers.ModelSerializer):
     """Serialize category identifiers and descriptive fields."""
 
     class Meta:
@@ -21,7 +21,7 @@ class BookSerializer(serializers.ModelSerializer):
     """Serialize books and validate category and copy constraints."""
 
     category_uuid = serializers.UUIDField(write_only=True, required=False)
-    category = CategorySerializer(read_only=True)
+    category = BookCategorySerializer(read_only=True)
 
     class Meta:
         """Configure book fields and read-only values exposed by the API."""

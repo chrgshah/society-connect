@@ -13,6 +13,8 @@ from core.responses.mixins import ResponseMixin
 from services.factories.authentication import AuthenticationFactory
 from services.models.user import User
 from services.serializers.authentication import (
+    CurrentUserSerializer,
+    EmptySerializer,
     LoginSerializer,
     LogoutSerializer,
     RefreshSerializer,
@@ -25,6 +27,7 @@ class AuthCsrfController(ResponseMixin, APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
+    serializer_class = EmptySerializer
 
     def get(self, request):
         """Create a CSRF token for an unauthenticated client."""
@@ -37,6 +40,7 @@ class AuthLoginController(ResponseMixin, APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
+    serializer_class = LoginSerializer
 
     def post(self, request):
         """Log in a user and return authentication cookies."""
@@ -59,6 +63,7 @@ class AuthRefreshController(ResponseMixin, APIView):
 
     authentication_classes = []
     permission_classes = [AllowAny]
+    serializer_class = RefreshSerializer
 
     def post(self, request):
         """Refresh authentication cookies using the submitted cookie/token."""
@@ -97,6 +102,8 @@ class AuthRefreshController(ResponseMixin, APIView):
 class AuthLogoutController(ResponseMixin, APIView):
     """Invalidate the current session and clear authentication cookies."""
 
+    serializer_class = LogoutSerializer
+
     def post(self, request):
         """Log out the authenticated user from the current session."""
         serializer = LogoutSerializer(data=request.data)
@@ -125,6 +132,8 @@ class AuthLogoutController(ResponseMixin, APIView):
 
 class AuthMeController(ResponseMixin, APIView):
     """Expose the current authenticated user's basic profile."""
+
+    serializer_class = CurrentUserSerializer
 
     def get(self, request):
         """Return identity fields for the request user."""

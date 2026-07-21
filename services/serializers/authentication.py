@@ -5,6 +5,21 @@ from rest_framework import serializers
 from services.models.user import User
 
 
+class EmptySerializer(serializers.Serializer):
+    """Describe an endpoint that has no request fields."""
+
+    pass
+
+
+class CurrentUserSerializer(serializers.Serializer):
+    """Describe the identity returned for the authenticated user."""
+
+    id = serializers.IntegerField(read_only=True)
+    uuid = serializers.UUIDField(read_only=True)
+    email = serializers.EmailField(read_only=True)
+    username = serializers.CharField(read_only=True)
+
+
 class LoginSerializer(serializers.Serializer):
     """Validate user credentials and expose the matching active user."""
 

@@ -22,6 +22,7 @@ export const AppLayout = () => {
       { key: '/borrow', icon: <SwapOutlined />, label: <Link to="/borrow">Borrow Book</Link> },
       { key: '/lendings', icon: <ClockCircleOutlined />, label: <Link to="/lendings">Lending Records</Link> },
       { key: '/overdue', icon: <ClockCircleOutlined />, label: <Link to="/overdue">Overdue Books</Link> },
+      { key: '/categories', icon: <ClockCircleOutlined />, label: <Link to="/categories">Categories</Link> },
     ],
     [],
   );
