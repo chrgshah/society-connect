@@ -77,9 +77,14 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     "TITLE": "Society Connect API",
     "DESCRIPTION": (
-        "Developer API documentation. Start with GET /api/v1/auth/csrf/, then "
-        "POST /api/v1/auth/login/. The browser stores the HTTP-only JWT cookies "
-        "and Swagger sends them automatically with later requests."
+        "## Before using the API\n\n"
+        "1. Call `GET /api/v1/auth/csrf/` and click **Execute**.\n"
+        "2. Call `POST /api/v1/auth/login/`, enter your `username` and `password`, "
+        "and click **Execute**.\n"
+        "3. After a successful login, call the other API endpoints as needed.\n\n"
+        "The browser stores the HTTP-only JWT authentication cookies and Swagger "
+        "sends them automatically with later requests. You do not need to copy a "
+        "token or use the **Authorize** button."
     ),
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
